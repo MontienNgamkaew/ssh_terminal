@@ -30,6 +30,69 @@
         <h1 class="pixel-text">Montien Tech Terminal</h1>
         <span class="badge pixel-badge">v1.0.0</span>
       </div>
+      
+      <!-- Header Gimmick (8-bit Running Mascot) -->
+      <div class="header-gimmick state-disconnected">
+        <div class="mascot-sprite-container">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16">
+            <!-- Frame 1 -->
+            <g transform="translate(0, 0)">
+              <rect class="pixel" x="6" y="0" width="7" height="1"/>
+              <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+              <rect class="pixel" x="5" y="2" width="9" height="1"/>
+              <rect class="pixel" x="5" y="3" width="6" height="1"/>
+              <rect class="pixel" x="5" y="4" width="4" height="1"/>
+              <rect class="pixel" x="4" y="5" width="4" height="1"/>
+              <rect class="pixel" x="3" y="6" width="7" height="1"/>
+              <rect class="pixel" x="1" y="7" width="9" height="1"/>
+              <rect class="pixel" x="0" y="8" width="9" height="1"/>
+              <rect class="pixel" x="0" y="9" width="8" height="1"/>
+              <rect class="pixel" x="1" y="10" width="6" height="1"/>
+              <rect class="pixel" x="2" y="11" width="4" height="1"/>
+              <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+              <rect class="pixel" x="2" y="13" width="1" height="1"/><rect class="pixel" x="4" y="13" width="1" height="1"/>
+              <rect class="pixel" x="2" y="14" width="2" height="1"/><rect class="pixel" x="4" y="14" width="2" height="1"/>
+            </g>
+            <!-- Frame 2 -->
+            <g transform="translate(16, 0)">
+              <rect class="pixel" x="6" y="0" width="7" height="1"/>
+              <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+              <rect class="pixel" x="5" y="2" width="9" height="1"/>
+              <rect class="pixel" x="5" y="3" width="6" height="1"/>
+              <rect class="pixel" x="5" y="4" width="4" height="1"/>
+              <rect class="pixel" x="4" y="5" width="4" height="1"/>
+              <rect class="pixel" x="3" y="6" width="7" height="1"/>
+              <rect class="pixel" x="1" y="7" width="9" height="1"/>
+              <rect class="pixel" x="0" y="8" width="9" height="1"/>
+              <rect class="pixel" x="0" y="9" width="8" height="1"/>
+              <rect class="pixel" x="1" y="10" width="6" height="1"/>
+              <rect class="pixel" x="2" y="11" width="4" height="1"/>
+              <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+              <rect class="pixel" x="2" y="13" width="1" height="1"/><rect class="pixel" x="5" y="13" width="1" height="1"/>
+              <rect class="pixel" x="2" y="14" width="2" height="1"/><rect class="pixel" x="5" y="14" width="2" height="1"/>
+            </g>
+            <!-- Frame 3 -->
+            <g transform="translate(32, 0)">
+              <rect class="pixel" x="6" y="0" width="7" height="1"/>
+              <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+              <rect class="pixel" x="5" y="2" width="9" height="1"/>
+              <rect class="pixel" x="5" y="3" width="6" height="1"/>
+              <rect class="pixel" x="5" y="4" width="4" height="1"/>
+              <rect class="pixel" x="4" y="5" width="4" height="1"/>
+              <rect class="pixel" x="3" y="6" width="7" height="1"/>
+              <rect class="pixel" x="1" y="7" width="9" height="1"/>
+              <rect class="pixel" x="0" y="8" width="9" height="1"/>
+              <rect class="pixel" x="0" y="9" width="8" height="1"/>
+              <rect class="pixel" x="1" y="10" width="6" height="1"/>
+              <rect class="pixel" x="2" y="11" width="4" height="1"/>
+              <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+              <rect class="pixel" x="1" y="13" width="1" height="1"/><rect class="pixel" x="4" y="13" width="1" height="1"/>
+              <rect class="pixel" x="0" y="14" width="2" height="1"/><rect class="pixel" x="4" y="14" width="2" height="1"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
       <div class="header-status">
         <span class="status-indicator disconnected" id="connection-status-dot"></span>
         <span id="connection-status-text" class="pixel-text-small">ไม่ได้เชื่อมต่อ</span>
@@ -96,6 +159,28 @@
 
         <hr class="divider">
 
+        <!-- Mascot Gimmick Selection -->
+        <div class="mascot-section">
+          <div class="section-title">
+            <i data-lucide="gamepad-2"></i>
+            <h3>ตัวละครหน้าจอ (Mascot Gimmick)</h3>
+          </div>
+          <div class="mascot-selector-wrapper">
+            <label for="mascot-select">เลือกตัวละครหลัก:</label>
+            <div class="input-wrapper">
+              <i data-lucide="smile"></i>
+              <select id="mascot-select">
+                <option value="dino" selected>🦖 ไดโนเสาร์ (Dino)</option>
+                <option value="cat">🐱 แมวไซเบอร์ (Cyber Cat)</option>
+                <option value="ghost">👻 ผีเรโทร (PacGhost)</option>
+                <option value="robot">🤖 หุ่นยนต์จิ๋ว (Tiny Robot)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
         <!-- Saved Profiles Manager -->
         <div class="profiles-section">
           <div class="section-title">
@@ -146,7 +231,7 @@
 
               <!-- Toggle Sidebar -->
               <button id="btn-toggle-sidebar" class="window-action-btn" title="ซ่อน/แสดง แผงควบคุมด้านข้าง">
-                <i data-lucide="layout-sidebar"></i>
+                <i data-lucide="panel-left"></i>
               </button>
 
               <!-- Clear Terminal -->

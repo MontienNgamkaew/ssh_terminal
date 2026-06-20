@@ -1,4 +1,4 @@
-const CACHE_NAME = 'montien-tech-terminal-v1';
+const CACHE_NAME = 'montien-tech-terminal-v5';
 const ASSETS = [
   '/',
   '/index.html',

@@ -107,6 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('ssh_auto_run', autoRunOnEnter ? 'true' : 'false');
   });
 
+  // Load saved mascot or default to dino
+  const savedMascot = localStorage.getItem('ssh_mascot') || 'dino';
+  const mascotSelect = document.getElementById('mascot-select');
+  if (mascotSelect) {
+    mascotSelect.value = savedMascot;
+    mascotSelect.addEventListener('change', (e) => {
+      const selected = e.target.value;
+      localStorage.setItem('ssh_mascot', selected);
+      updateMascotSVG(selected);
+    });
+  }
+  updateMascotSVG(savedMascot);
+
   createTab();
 
   if ('serviceWorker' in navigator) {
@@ -142,8 +155,17 @@ function createTab() {
   term.open(termEl);
   fitAddon.fit();
 
+  // Prevent xterm from capturing Alt+Spacebar so it can be handled globally
+  term.attachCustomKeyEventHandler((e) => {
+    if (e.altKey && (e.code === 'Space' || e.key === ' ' || e.keyCode === 32)) {
+      return false;
+    }
+    return true;
+  });
+
   // Forward keystrokes to active SSH session
   term.onData((data) => {
+    if (tabId === activeTabId) triggerGimmickActivity();
     const s = sessions[tabId];
     if (s && s.socket && s.socket.readyState === WebSocket.OPEN) {
       s.socket.send(JSON.stringify({ type: 'input', data }));
@@ -347,6 +369,7 @@ function doConnect(tabId) {
         }
       } else if (msg.type === 'data') {
         session.term.write(msg.data);
+        if (tabId === activeTabId) triggerGimmickActivity();
       } else if (msg.type === 'error') {
         if (tabId === activeTabId) alert(msg.message);
         doDisconnect(tabId, true);
@@ -417,6 +440,13 @@ function doDisconnect(tabId, intentional) {
 function setConnectionStatus(state, text) {
   statusDot.className = `status-indicator ${state}`;
   statusText.textContent = text;
+
+  const gimmick = document.querySelector('.header-gimmick');
+  if (gimmick) {
+    gimmick.classList.remove('state-connected', 'state-connecting', 'state-disconnected');
+    gimmick.classList.add(`state-${state}`);
+  }
+
   if (state === 'connected') {
     connectBtn.disabled = true;
     disconnectBtn.classList.remove('hidden');
@@ -667,3 +697,266 @@ thaiCommandInput.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// ─── Focus Toggle (Alt + Spacebar) ───────────────────────────────────────────
+let lastToggleTime = 0;
+function toggleCursorFocus() {
+  const now = Date.now();
+  if (now - lastToggleTime < 100) return; // Debounce double triggers
+  lastToggleTime = now;
+
+  const session = sessions[activeTabId];
+  if (!session) return;
+
+  if (document.activeElement === thaiCommandInput) {
+    session.term.focus();
+  } else {
+    if (!thaiCommandInput.disabled) {
+      thaiCommandInput.focus();
+    }
+  }
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.altKey && (e.code === 'Space' || e.key === ' ' || e.keyCode === 32)) {
+    if (!thaiCommandInput.disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleCursorFocus();
+    }
+  }
+});
+
+// ─── Header Gimmick Activity Control ─────────────────────────────────────────
+let gimmickTimeout = null;
+function triggerGimmickActivity() {
+  const gimmick = document.querySelector('.header-gimmick');
+  if (!gimmick) return;
+  
+  gimmick.classList.add('active');
+  
+  if (gimmickTimeout) clearTimeout(gimmickTimeout);
+  gimmickTimeout = setTimeout(() => {
+    gimmick.classList.remove('active');
+  }, 1000);
+}
+
+// ─── Mascot Gimmick Setup ───────────────────────────────────────────────────
+const MASCOT_SVGS = {
+  dino: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16">
+      <!-- Frame 1 -->
+      <g transform="translate(0, 0)">
+        <rect class="pixel" x="6" y="0" width="7" height="1"/>
+        <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+        <rect class="pixel" x="5" y="2" width="9" height="1"/>
+        <rect class="pixel" x="5" y="3" width="6" height="1"/>
+        <rect class="pixel" x="5" y="4" width="4" height="1"/>
+        <rect class="pixel" x="4" y="5" width="4" height="1"/>
+        <rect class="pixel" x="3" y="6" width="7" height="1"/>
+        <rect class="pixel" x="1" y="7" width="9" height="1"/>
+        <rect class="pixel" x="0" y="8" width="9" height="1"/>
+        <rect class="pixel" x="0" y="9" width="8" height="1"/>
+        <rect class="pixel" x="1" y="10" width="6" height="1"/>
+        <rect class="pixel" x="2" y="11" width="4" height="1"/>
+        <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+        <rect class="pixel" x="2" y="13" width="1" height="1"/><rect class="pixel" x="4" y="13" width="1" height="1"/>
+        <rect class="pixel" x="2" y="14" width="2" height="1"/><rect class="pixel" x="4" y="14" width="2" height="1"/>
+      </g>
+      <!-- Frame 2 -->
+      <g transform="translate(16, 0)">
+        <rect class="pixel" x="6" y="0" width="7" height="1"/>
+        <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+        <rect class="pixel" x="5" y="2" width="9" height="1"/>
+        <rect class="pixel" x="5" y="3" width="6" height="1"/>
+        <rect class="pixel" x="5" y="4" width="4" height="1"/>
+        <rect class="pixel" x="4" y="5" width="4" height="1"/>
+        <rect class="pixel" x="3" y="6" width="7" height="1"/>
+        <rect class="pixel" x="1" y="7" width="9" height="1"/>
+        <rect class="pixel" x="0" y="8" width="9" height="1"/>
+        <rect class="pixel" x="0" y="9" width="8" height="1"/>
+        <rect class="pixel" x="1" y="10" width="6" height="1"/>
+        <rect class="pixel" x="2" y="11" width="4" height="1"/>
+        <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+        <rect class="pixel" x="2" y="13" width="1" height="1"/><rect class="pixel" x="5" y="13" width="1" height="1"/>
+        <rect class="pixel" x="2" y="14" width="2" height="1"/><rect class="pixel" x="5" y="14" width="2" height="1"/>
+      </g>
+      <!-- Frame 3 -->
+      <g transform="translate(32, 0)">
+        <rect class="pixel" x="6" y="0" width="7" height="1"/>
+        <rect class="pixel" x="5" y="1" width="3" height="1"/><rect class="pixel" x="9" y="1" width="5" height="1"/>
+        <rect class="pixel" x="5" y="2" width="9" height="1"/>
+        <rect class="pixel" x="5" y="3" width="6" height="1"/>
+        <rect class="pixel" x="5" y="4" width="4" height="1"/>
+        <rect class="pixel" x="4" y="5" width="4" height="1"/>
+        <rect class="pixel" x="3" y="6" width="7" height="1"/>
+        <rect class="pixel" x="1" y="7" width="9" height="1"/>
+        <rect class="pixel" x="0" y="8" width="9" height="1"/>
+        <rect class="pixel" x="0" y="9" width="8" height="1"/>
+        <rect class="pixel" x="1" y="10" width="6" height="1"/>
+        <rect class="pixel" x="2" y="11" width="4" height="1"/>
+        <rect class="pixel" x="2" y="12" width="1" height="1"/><rect class="pixel" x="4" y="12" width="1" height="1"/>
+        <rect class="pixel" x="1" y="13" width="1" height="1"/><rect class="pixel" x="4" y="13" width="1" height="1"/>
+        <rect class="pixel" x="0" y="14" width="2" height="1"/><rect class="pixel" x="4" y="14" width="2" height="1"/>
+      </g>
+    </svg>
+  `,
+  cat: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16">
+      <!-- Frame 1 -->
+      <g transform="translate(0, 0)">
+        <rect class="pixel" x="4" y="3" width="1" height="1"/>
+        <rect class="pixel" x="9" y="3" width="1" height="1"/>
+        <rect class="pixel" x="3" y="4" width="8" height="1"/>
+        <rect class="pixel" x="3" y="5" width="2" height="1"/><rect class="pixel" x="6" y="5" width="2" height="1"/><rect class="pixel" x="9" y="5" width="2" height="1"/>
+        <rect class="pixel" x="3" y="6" width="8" height="1"/>
+        <rect class="pixel" x="4" y="7" width="6" height="1"/>
+        <rect class="pixel" x="2" y="8" width="9" height="4"/>
+        <rect class="pixel" x="11" y="7" width="1" height="2"/>
+        <rect class="pixel" x="12" y="5" width="1" height="3"/>
+        <rect class="pixel" x="3" y="12" width="1" height="3"/>
+        <rect class="pixel" x="5" y="12" width="1" height="2"/>
+        <rect class="pixel" x="8" y="12" width="1" height="3"/>
+        <rect class="pixel" x="10" y="12" width="1" height="2"/>
+      </g>
+      <!-- Frame 2 -->
+      <g transform="translate(16, 0)">
+        <rect class="pixel" x="4" y="3" width="1" height="1"/>
+        <rect class="pixel" x="9" y="3" width="1" height="1"/>
+        <rect class="pixel" x="3" y="4" width="8" height="1"/>
+        <rect class="pixel" x="3" y="5" width="2" height="1"/><rect class="pixel" x="6" y="5" width="2" height="1"/><rect class="pixel" x="9" y="5" width="2" height="1"/>
+        <rect class="pixel" x="3" y="6" width="8" height="1"/>
+        <rect class="pixel" x="4" y="7" width="6" height="1"/>
+        <rect class="pixel" x="2" y="8" width="9" height="4"/>
+        <rect class="pixel" x="11" y="8" width="1" height="2"/>
+        <rect class="pixel" x="12" y="9" width="1" height="2"/>
+        <rect class="pixel" x="3" y="12" width="1" height="2"/>
+        <rect class="pixel" x="5" y="12" width="1" height="3"/>
+        <rect class="pixel" x="8" y="12" width="1" height="2"/>
+        <rect class="pixel" x="10" y="12" width="1" height="3"/>
+      </g>
+      <!-- Frame 3 -->
+      <g transform="translate(32, 0)">
+        <rect class="pixel" x="4" y="3" width="1" height="1"/>
+        <rect class="pixel" x="9" y="3" width="1" height="1"/>
+        <rect class="pixel" x="3" y="4" width="8" height="1"/>
+        <rect class="pixel" x="3" y="5" width="2" height="1"/><rect class="pixel" x="6" y="5" width="2" height="1"/><rect class="pixel" x="9" y="5" width="2" height="1"/>
+        <rect class="pixel" x="3" y="6" width="8" height="1"/>
+        <rect class="pixel" x="4" y="7" width="6" height="1"/>
+        <rect class="pixel" x="2" y="8" width="9" height="4"/>
+        <rect class="pixel" x="11" y="6" width="1" height="2"/>
+        <rect class="pixel" x="12" y="4" width="1" height="3"/>
+        <rect class="pixel" x="3" y="12" width="1" height="3"/>
+        <rect class="pixel" x="5" y="12" width="1" height="3"/>
+        <rect class="pixel" x="8" y="12" width="1" height="3"/>
+        <rect class="pixel" x="10" y="12" width="1" height="3"/>
+      </g>
+    </svg>
+  `,
+  ghost: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16">
+      <!-- Frame 1 -->
+      <g transform="translate(0, 0)">
+        <rect class="pixel" x="4" y="1" width="8" height="1"/>
+        <rect class="pixel" x="2" y="2" width="12" height="1"/>
+        <rect class="pixel" x="1" y="3" width="14" height="1"/>
+        <rect class="pixel" x="1" y="4" width="2" height="1"/><rect class="pixel" x="5" y="4" width="4" height="1"/><rect class="pixel" x="11" y="4" width="4" height="1"/>
+        <rect class="pixel" x="1" y="5" width="2" height="1"/><rect class="pixel" x="5" y="5" width="4" height="1"/><rect class="pixel" x="11" y="5" width="4" height="1"/>
+        <rect class="pixel" x="1" y="6" width="14" height="6"/>
+        <rect class="pixel" x="1" y="12" width="2" height="2"/>
+        <rect class="pixel" x="5" y="12" width="2" height="2"/>
+        <rect class="pixel" x="9" y="12" width="2" height="2"/>
+        <rect class="pixel" x="13" y="12" width="2" height="2"/>
+        <rect class="pixel" x="3" y="12" width="2" height="1"/>
+        <rect class="pixel" x="7" y="12" width="2" height="1"/>
+        <rect class="pixel" x="11" y="12" width="2" height="1"/>
+      </g>
+      <!-- Frame 2 -->
+      <g transform="translate(16, 0)">
+        <rect class="pixel" x="4" y="1" width="8" height="1"/>
+        <rect class="pixel" x="2" y="2" width="12" height="1"/>
+        <rect class="pixel" x="1" y="3" width="14" height="1"/>
+        <rect class="pixel" x="1" y="4" width="1" height="1"/><rect class="pixel" x="4" y="4" width="4" height="1"/><rect class="pixel" x="10" y="4" width="5" height="1"/>
+        <rect class="pixel" x="1" y="5" width="1" height="1"/><rect class="pixel" x="4" y="5" width="4" height="1"/><rect class="pixel" x="10" y="5" width="5" height="1"/>
+        <rect class="pixel" x="1" y="6" width="14" height="6"/>
+        <rect class="pixel" x="3" y="12" width="2" height="2"/>
+        <rect class="pixel" x="7" y="12" width="2" height="2"/>
+        <rect class="pixel" x="11" y="12" width="2" height="2"/>
+        <rect class="pixel" x="1" y="12" width="2" height="1"/>
+        <rect class="pixel" x="5" y="12" width="2" height="1"/>
+        <rect class="pixel" x="9" y="12" width="2" height="1"/>
+        <rect class="pixel" x="13" y="12" width="2" height="1"/>
+      </g>
+      <!-- Frame 3 -->
+      <g transform="translate(32, 0)">
+        <rect class="pixel" x="4" y="1" width="8" height="1"/>
+        <rect class="pixel" x="2" y="2" width="12" height="1"/>
+        <rect class="pixel" x="1" y="3" width="14" height="1"/>
+        <rect class="pixel" x="1" y="4" width="2" height="1"/><rect class="pixel" x="5" y="4" width="4" height="1"/><rect class="pixel" x="11" y="4" width="4" height="1"/>
+        <rect class="pixel" x="1" y="5" width="2" height="1"/><rect class="pixel" x="5" y="5" width="4" height="1"/><rect class="pixel" x="11" y="5" width="4" height="1"/>
+        <rect class="pixel" x="1" y="6" width="14" height="6"/>
+        <rect class="pixel" x="2" y="12" width="2" height="2"/>
+        <rect class="pixel" x="6" y="12" width="2" height="2"/>
+        <rect class="pixel" x="10" y="12" width="2" height="2"/>
+        <rect class="pixel" x="1" y="12" width="1" height="1"/>
+        <rect class="pixel" x="4" y="12" width="2" height="1"/>
+        <rect class="pixel" x="8" y="12" width="2" height="1"/>
+        <rect class="pixel" x="12" y="12" width="3" height="1"/>
+      </g>
+    </svg>
+  `,
+  robot: `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 16">
+      <!-- Frame 1 -->
+      <g transform="translate(0, 0)">
+        <rect class="pixel" x="7" y="0" width="2" height="1"/>
+        <rect class="pixel" x="7" y="1" width="2" height="1"/>
+        <rect class="pixel" x="4" y="2" width="8" height="4"/>
+        <rect class="pixel" x="4" y="4" width="1" height="1"/><rect class="pixel" x="6" y="4" width="4" height="1"/><rect class="pixel" x="11" y="4" width="1" height="1"/>
+        <rect class="pixel" x="7" y="6" width="2" height="1"/>
+        <rect class="pixel" x="3" y="7" width="10" height="5"/>
+        <rect class="pixel" x="1" y="7" width="2" height="3"/>
+        <rect class="pixel" x="13" y="9" width="2" height="3"/>
+        <rect class="pixel" x="4" y="12" width="8" height="2"/>
+        <rect class="pixel" x="5" y="14" width="2" height="1"/>
+        <rect class="pixel" x="9" y="14" width="2" height="1"/>
+      </g>
+      <!-- Frame 2 -->
+      <g transform="translate(16, 0)">
+        <rect class="pixel" x="7" y="0" width="2" height="1"/>
+        <rect class="pixel" x="7" y="1" width="2" height="1"/>
+        <rect class="pixel" x="4" y="2" width="8" height="4"/>
+        <rect class="pixel" x="4" y="4" width="1" height="1"/><rect class="pixel" x="6" y="4" width="4" height="1"/><rect class="pixel" x="11" y="4" width="1" height="1"/>
+        <rect class="pixel" x="7" y="6" width="2" height="1"/>
+        <rect class="pixel" x="3" y="7" width="10" height="5"/>
+        <rect class="pixel" x="1" y="9" width="2" height="3"/>
+        <rect class="pixel" x="13" y="7" width="2" height="3"/>
+        <rect class="pixel" x="4" y="12" width="8" height="2"/>
+        <rect class="pixel" x="6" y="14" width="2" height="1"/>
+        <rect class="pixel" x="10" y="14" width="2" height="1"/>
+      </g>
+      <!-- Frame 3 -->
+      <g transform="translate(32, 0)">
+        <rect class="pixel" x="7" y="0" width="2" height="1"/>
+        <rect class="pixel" x="7" y="1" width="2" height="1"/>
+        <rect class="pixel" x="4" y="2" width="8" height="4"/>
+        <rect class="pixel" x="4" y="4" width="1" height="1"/><rect class="pixel" x="6" y="4" width="4" height="1"/><rect class="pixel" x="11" y="4" width="1" height="1"/>
+        <rect class="pixel" x="7" y="6" width="2" height="1"/>
+        <rect class="pixel" x="3" y="7" width="10" height="5"/>
+        <rect class="pixel" x="1" y="8" width="2" height="2"/>
+        <rect class="pixel" x="13" y="8" width="2" height="2"/>
+        <rect class="pixel" x="4" y="12" width="8" height="2"/>
+        <rect class="pixel" x="4" y="14" width="2" height="1"/>
+        <rect class="pixel" x="8" y="14" width="2" height="1"/>
+      </g>
+    </svg>
+  `
+};
+
+function updateMascotSVG(mascotName) {
+  const container = document.querySelector('.mascot-sprite-container');
+  if (!container) return;
+  const svgContent = MASCOT_SVGS[mascotName] || MASCOT_SVGS['dino'];
+  container.innerHTML = svgContent;
+}
+

@@ -124,6 +124,211 @@ body {
   font-family: 'Silkscreen', monospace;
 }
 
+/* Header Gimmick (8-bit Running Mascot) */
+.header-gimmick {
+  flex: 1;
+  height: 32px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 20px;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: flex-end;
+}
+
+.mascot-sprite-container {
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+  position: absolute;
+  bottom: 2px;
+  image-rendering: pixelated;
+  transform: scale(1.5);
+  transform-origin: bottom left;
+  left: calc(50% - 12px);
+  transition: left 0.1s linear;
+}
+
+.mascot-sprite-container svg {
+  width: 48px; /* 3 frames * 16px */
+  height: 16px;
+  display: block;
+}
+
+.mascot-sprite-container svg .pixel {
+  fill: var(--color-primary);
+  transition: fill var(--transition-fast);
+}
+
+/* --- STATE: CONNECTED --- */
+/* Connected & Idle: walks slowly */
+.header-gimmick.state-connected .mascot-sprite-container {
+  animation: run-across-bounce 22s linear infinite;
+  animation-play-state: running;
+}
+.header-gimmick.state-connected .mascot-sprite-container svg {
+  animation: mascot-run 0.8s steps(3) infinite;
+  animation-play-state: running;
+}
+
+/* Connected & Active: runs fast */
+.header-gimmick.state-connected.active .mascot-sprite-container {
+  animation-duration: 9s;
+}
+.header-gimmick.state-connected.active .mascot-sprite-container svg {
+  animation-duration: 0.35s;
+}
+
+/* --- STATE: CONNECTING (RECONNECTING) --- */
+/* Paces anxiously in place, flashes orange */
+.header-gimmick.state-connecting .mascot-sprite-container {
+  animation: pace-anxious 1.6s ease-in-out infinite;
+  animation-play-state: running;
+}
+.header-gimmick.state-connecting .mascot-sprite-container svg {
+  animation: mascot-run 0.4s steps(3) infinite;
+  animation-play-state: running;
+}
+.header-gimmick.state-connecting .mascot-sprite-container svg .pixel {
+  fill: var(--color-warning);
+  animation: flash-opacity 0.6s ease-in-out infinite alternate;
+}
+
+/* --- STATE: DISCONNECTED --- */
+/* Sits in center, wobbily dizzy spin, flashes red */
+.header-gimmick.state-disconnected .mascot-sprite-container {
+  left: calc(50% - 12px);
+  animation: dizzy-wobble 2.5s ease-in-out infinite;
+  animation-play-state: running;
+}
+.header-gimmick.state-disconnected .mascot-sprite-container svg {
+  animation: none;
+}
+.header-gimmick.state-disconnected .mascot-sprite-container svg .pixel {
+  fill: var(--color-danger);
+  animation: flash-opacity-fast 0.4s ease-in-out infinite alternate;
+}
+
+/* Keyframes */
+@keyframes mascot-run {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-48px);
+  }
+}
+
+@keyframes run-across-bounce {
+  0% {
+    left: 0;
+    transform: scale(1.5) scaleX(1);
+  }
+  49.9% {
+    left: calc(100% - 24px);
+    transform: scale(1.5) scaleX(1);
+  }
+  50% {
+    left: calc(100% - 24px);
+    transform: scale(1.5) scaleX(-1);
+  }
+  99.9% {
+    left: 0;
+    transform: scale(1.5) scaleX(-1);
+  }
+  100% {
+    left: 0;
+    transform: scale(1.5) scaleX(1);
+  }
+}
+
+@keyframes pace-anxious {
+  0% {
+    left: calc(50% - 20px);
+    transform: scale(1.5) scaleX(1);
+  }
+  49.9% {
+    left: calc(50% + 20px);
+    transform: scale(1.5) scaleX(1);
+  }
+  50% {
+    left: calc(50% + 20px);
+    transform: scale(1.5) scaleX(-1);
+  }
+  99.9% {
+    left: calc(50% - 20px);
+    transform: scale(1.5) scaleX(-1);
+  }
+  100% {
+    left: calc(50% - 20px);
+    transform: scale(1.5) scaleX(1);
+  }
+}
+
+@keyframes dizzy-wobble {
+  0%, 100% {
+    transform: scale(1.5) rotate(0deg) translateY(0);
+  }
+  20% {
+    transform: scale(1.5) rotate(12deg) translateY(-2px);
+  }
+  40% {
+    transform: scale(1.5) rotate(-12deg) translateY(1px);
+  }
+  60% {
+    transform: scale(1.5) rotate(12deg) translateY(-1px);
+  }
+  80% {
+    transform: scale(1.5) rotate(-12deg) translateY(-2px);
+  }
+}
+
+@keyframes flash-opacity {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes flash-opacity-fast {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
+}
+
+/* Mascot Selection Panel UI styling */
+.mascot-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 5px 0;
+}
+
+.mascot-selector-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mascot-selector-wrapper select {
+  width: 100%;
+  padding: 6px 10px 6px 36px;
+  background-color: var(--bg-dark);
+  border: 3px solid var(--color-border-dark);
+  color: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: 0.8rem;
+  transition: border-color var(--transition-fast);
+  cursor: pointer;
+  outline: none;
+}
+
+.mascot-selector-wrapper select:focus {
+  border-color: var(--color-primary);
+}
+
+.mascot-selector-wrapper select option {
+  background-color: #18181b;
+  color: #ffffff;
+}
+
 .header-status {
   display: flex;
   align-items: center;
