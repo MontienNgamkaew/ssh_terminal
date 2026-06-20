@@ -87,6 +87,7 @@ let fitAddon = null;
 let commandHistory = [];
 let historyIndex = -1;
 let currentProfileId = null;
+let autoRunOnEnter = localStorage.getItem('ssh_auto_run') !== 'false'; // default true
 
 // DOM Elements
 const connectionForm = document.getElementById('connection-form');
@@ -116,6 +117,7 @@ const appContainer = document.querySelector('.app-container');
 
 const thaiCommandInput = document.getElementById('thai-command-input');
 const sendCommandBtn = document.getElementById('btn-send-command');
+const autoRunToggle = document.getElementById('auto-run-toggle');
 
 // Initial Setup
 document.addEventListener('DOMContentLoaded', () => {
@@ -159,6 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error(e);
     }
   }
+
+  // Load auto-run toggle state
+  autoRunToggle.checked = autoRunOnEnter;
+  autoRunToggle.addEventListener('change', () => {
+    autoRunOnEnter = autoRunToggle.checked;
+    localStorage.setItem('ssh_auto_run', autoRunOnEnter ? 'true' : 'false');
+  });
 
   // Register Service Worker for PWA installation support
   if ('serviceWorker' in navigator) {
@@ -573,10 +582,11 @@ function sendThaiCommand() {
   if (!cmd) return;
 
   if (socket && socket.readyState === WebSocket.OPEN) {
-    // Send command + newline character so shell executes it immediately
+    // \r executes immediately in terminal; omit it for manual-run mode
+    const suffix = autoRunOnEnter ? '\r' : '';
     socket.send(JSON.stringify({
       type: 'input',
-      data: cmd + '\n'
+      data: cmd + suffix
     }));
 
     // Add to history if it's new or not the same as the last one
@@ -601,6 +611,8 @@ sendCommandBtn.addEventListener('click', sendThaiCommand);
 // Press Enter inside command input
 thaiCommandInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
+    // Skip if IME (Thai input method) is still composing — let it commit first
+    if (e.isComposing) return;
     e.preventDefault();
     sendThaiCommand();
   } else if (e.key === 'ArrowUp') {
