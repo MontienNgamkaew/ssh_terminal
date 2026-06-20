@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montien Tech Terminal — คู่มือติดตั้งบน Windows</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Prompt:wght@300;400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --bg-card2: #27272a;
+      --border: #3f3f46;
+      --green: #39ff14;
+      --pink: #ff007f;
+      --cyan: #00f0ff;
+      --amber: #ffb000;
+      --red: #ff3333;
+      --purple: #bd93f9;
+      --text: #f8f8f2;
+      --muted: #a1a1aa;
+      --font-pixel: 'Silkscreen', monospace;
+      --font-body: 'Prompt', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* ── Hero ────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 56px 24px 48px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(0,240,255,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--font-pixel);
+      font-size: 0.6rem;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      padding: 3px 10px;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .hero h1 {
+      font-family: var(--font-pixel);
+      font-size: clamp(1rem, 4vw, 1.8rem);
+      color: var(--cyan);
+      text-shadow: 0 0 20px rgba(0,240,255,0.4);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .hero .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto 24px;
+    }
+    .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--bg-card);
+    }
+    .tag.green  { border-color: var(--green);  color: var(--green); }
+    .tag.cyan   { border-color: var(--cyan);   color: var(--cyan); }
+    .tag.pink   { border-color: var(--pink);   color: var(--pink); }
+    .tag.amber  { border-color: var(--amber);  color: var(--amber); }
+    .tag.purple { border-color: var(--purple); color: var(--purple); }
+
+    /* ── Section ─────────────────────────────────────────── */
+    .section { margin-top: 52px; }
+    .section-title {
+      font-family: var(--font-pixel);
+      font-size: 0.8rem;
+      color: var(--cyan);
+      letter-spacing: 0.12em;
+      border-left: 3px solid var(--cyan);
+      padding-left: 12px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+    h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; }
+    h3 { font-size: 1rem; font-weight: 600; color: var(--green); margin-bottom: 8px; }
+    p  { color: var(--muted); margin-bottom: 12px; }
+    p strong { color: var(--text); }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+    /* ── Feature List ────────────────────────────────────── */
+    .feature-list { list-style: none; }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #27272a;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .feature-list strong { color: var(--text); }
+
+    /* ── Code Block ─────────────────────────────────────── */
+    pre {
+      background: #000;
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      overflow-x: auto;
+      margin: 12px 0;
+      line-height: 1.7;
+      box-shadow: 4px 4px 0 #000;
+    }
+    code { font-family: var(--font-mono); font-size: 0.85em; color: var(--cyan); background: #18181b; padding: 2px 5px; }
+
+    /* ── Step List ──────────────────────────────────────── */
+    .step-list { counter-reset: steps; list-style: none; }
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #1f1f22;
+      align-items: flex-start;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before {
+      content: counter(steps, decimal-leading-zero);
+      font-family: var(--font-pixel);
+      font-size: 0.65rem;
+      color: var(--cyan);
+      background: #000;
+      border: 1px solid var(--cyan);
+      min-width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .step-content { flex: 1; }
+    .step-content strong { color: var(--text); display: block; margin-bottom: 4px; }
+    .step-content p { margin: 0; }
+
+    /* ── Keyboard Shortcut ─────────────────────────────── */
+    kbd {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: #222;
+      border: 1px solid #555;
+      border-bottom: 2px solid #333;
+      padding: 2px 7px;
+      color: var(--text);
+    }
+
+    /* ── Highlight box ──────────────────────────────────── */
+    .highlight-box {
+      border-left: 3px solid var(--amber);
+      background: rgba(255,176,0,0.05);
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .highlight-box strong { color: var(--amber); }
+    .highlight-box.info { border-color: var(--cyan); background: rgba(0,240,255,0.05); }
+    .highlight-box.info strong { color: var(--cyan); }
+    .highlight-box.success { border-color: var(--green); background: rgba(57,255,20,0.05); }
+    .highlight-box.success strong { color: var(--green); }
+    .highlight-box.danger { border-color: var(--red); background: rgba(255,51,51,0.05); }
+    .highlight-box.danger strong { color: var(--red); }
+
+    /* ── OS Badge ───────────────────────────────────────── */
+    .os-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0078d4;
+      color: #fff;
+      font-family: var(--font-pixel);
+      font-size: 0.55rem;
+      letter-spacing: 0.08em;
+      padding: 5px 14px;
+      border: 1px solid #106ebe;
+      box-shadow: 3px 3px 0 #000;
+      margin-bottom: 20px;
+    }
+
+    /* ── Verify block ───────────────────────────────────── */
+    .verify-block {
+      background: #000;
+      border: 1px solid #27272a;
+      padding: 14px 18px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.8;
+      margin: 12px 0;
+    }
+    .verify-block .prompt { color: #50fa7b; }
+    .verify-block .cmd    { color: #f8f8f2; }
+    .verify-block .out    { color: #a1a1aa; }
+    .verify-block .ok     { color: #50fa7b; }
+
+    /* ── Method tabs ────────────────────────────────────── */
+    .method-tabs { display: flex; gap: 0; margin-bottom: 0; }
+    .method-tab {
+      font-family: var(--font-pixel);
+      font-size: 0.52rem;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      cursor: default;
+      letter-spacing: 0.06em;
+    }
+    .method-tab.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+    .method-tab.inactive { background: var(--bg-card); color: var(--muted); }
+    .method-body {
+      border: 1px solid var(--border);
+      border-top: none;
+      padding: 20px;
+      background: var(--bg-card);
+      margin-bottom: 16px;
+    }
+
+    /* ── Progress bar ───────────────────────────────────── */
+    .progress-track {
+      display: flex;
+      gap: 0;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+    .progress-step {
+      flex: 1;
+      min-width: 80px;
+      text-align: center;
+      padding: 10px 4px;
+      border: 1px solid var(--border);
+      border-right: none;
+      position: relative;
+    }
+    .progress-step:last-child { border-right: 1px solid var(--border); }
+    .progress-step.done { background: rgba(57,255,20,0.07); border-color: rgba(57,255,20,0.3); }
+    .progress-step .ps-num {
+      font-family: var(--font-pixel);
+      font-size: 0.55rem;
+      color: var(--green);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .progress-step .ps-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      display: block;
+    }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 40px 20px 24px;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+    .footer p { font-family: var(--font-pixel); font-size: 0.52rem; color: #3f3f46; letter-spacing: 0.1em; }
+    .footer .version { color: var(--cyan); }
+
+    .g  { color: #50fa7b; }
+    .c  { color: #8be9fd; }
+    .y  { color: #f1fa8c; }
+    .r  { color: #ff5555; }
+    .p  { color: #bd93f9; }
+    .w  { color: #f8f8f2; }
+    .d  { color: #636363; }
+    .pk { color: #ff79c6; }
+    .am { color: #ffb000; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HERO ══════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-badge">WINDOWS INSTALLATION GUIDE v1.0.0</div>
+  <h1>ติดตั้ง Montien Tech Terminal บน Windows</h1>
+  <p class="subtitle">
+    คู่มือติดตั้งแบบ step-by-step สำหรับ Windows 10 / 11
+    รัน Node.js server บนเครื่อง Windows แล้วเปิดใช้งานผ่านเบราว์เซอร์
+  </p>
+  <div class="tags">
+    <span class="tag cyan">Windows 10 / 11</span>
+    <span class="tag green">Node.js LTS</span>
+    <span class="tag amber">npm</span>
+    <span class="tag purple">Git (optional)</span>
+    <span class="tag pink">PM2 (optional)</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+<!-- ═══════════════════════ SECTION: Overview ════════════════════════════ -->
+<section class="section">
+  <div class="section-title">01 — ภาพรวมก่อนเริ่ม</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>แอปนี้ทำอะไร?</h3>
+      <p>
+        <strong>Montien Tech Terminal</strong> คือ SSH Client ที่รันเป็น
+        <strong>Node.js server บน Windows</strong> แล้วเปิดผ่าน browser
+        เพื่อ SSH เข้าเครื่อง Linux/Mac อื่น
+      </p>
+      <p>
+        ตัวแอปไม่ได้ SSH เข้า Windows — แต่ใช้ Windows เป็น <strong>relay server</strong>
+        เพื่อเชื่อมต่อไปยัง SSH server ปลายทาง
+      </p>
+    </div>
+    <div class="card">
+      <h3>Requirements</h3>
+      <ul class="feature-list">
+        <li><span class="icon">🪟</span><span><strong>Windows 10</strong> (Build 1903+) หรือ <strong>Windows 11</strong></span></li>
+        <li><span class="icon">🟢</span><span><strong>Node.js v18 LTS</strong> ขึ้นไป</span></li>
+        <li><span class="icon">📦</span><span><strong>npm</strong> (ติดมากับ Node.js อัตโนมัติ)</span></li>
+        <li><span class="icon">🌐</span><span>Browser: Chrome, Edge, Firefox (รุ่นใหม่)</span></li>
+        <li><span class="icon">🔐</span><span>SSH server ปลายทางที่จะเชื่อมต่อ (เปิด port 22)</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Overview flow -->
+  <div class="progress-track">
+    <div class="progress-step done"><span class="ps-num">01</span><span class="ps-label">ติดตั้ง Node.js</span></div>
+    <div class="progress-step done"><span class="ps-num">02</span><span class="ps-label">ดาวน์โหลดโปรเจค</span></div>
+    <div class="progress-step done"><span class="ps-num">03</span><span class="ps-label">npm install</span></div>
+    <div class="progress-step done"><span class="ps-num">04</span><span class="ps-label">npm start</span></div>
+    <div class="progress-step done"><span class="ps-num">05</span><span class="ps-label">เปิด Browser</span></div>
+    <div class="progress-step done"><span class="ps-num">06</span><span class="ps-label">เชื่อมต่อ SSH</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Step-by-Step ════════════════════════ -->
+<section class="section">
+  <div class="section-title">02 — ขั้นตอนติดตั้ง (Step-by-Step)</div>
+
+  <!-- Step 1: Node.js -->
+  <div class="card">
+    <h3>Step 1 — ติดตั้ง Node.js</h3>
+    <p>ดาวน์โหลด Node.js LTS จากเว็บไซต์ทางการ แล้วติดตั้งตามขั้นตอนปกติ</p>
+
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>ไปที่เว็บไซต์ Node.js</strong>
+          <p>เปิด browser แล้วพิมพ์ใน address bar: <code>https://nodejs.org</code></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ดาวน์โหลด LTS version</strong>
+          <p>กดปุ่ม <strong>"Download Node.js (LTS)"</strong> — ปุ่มซ้ายที่มีป้าย <code>Recommended For Most Users</code></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>รัน Installer (.msi)</strong>
+          <p>ดับเบิลคลิกไฟล์ <code>node-vXX.XX.X-x64.msi</code> ที่ดาวน์โหลดมา กด <strong>Next → Next → Install → Finish</strong></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ตรวจสอบการติดตั้ง</strong>
+          <p>เปิด <strong>Command Prompt</strong> หรือ <strong>PowerShell</strong> แล้วพิมพ์:</p>
+          <div class="verify-block">
+            <span class="prompt">C:\Users\You&gt;</span> <span class="cmd">node --version</span><br>
+            <span class="ok">v22.13.0</span><br>
+            <span class="prompt">C:\Users\You&gt;</span> <span class="cmd">npm --version</span><br>
+            <span class="ok">10.9.2</span>
+          </div>
+          <p>ถ้าแสดงเวอร์ชัน = ติดตั้งสำเร็จ</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="highlight-box info">
+      <strong>ℹ วิธีเปิด Command Prompt:</strong> กด <kbd>Win</kbd> + <kbd>R</kbd>
+      พิมพ์ <code>cmd</code> แล้วกด <kbd>Enter</kbd>
+      หรือค้นหา "Command Prompt" ใน Start Menu
+    </div>
+  </div>
+
+  <!-- Step 2: Download project -->
+  <div class="card">
+    <h3>Step 2 — ดาวน์โหลดโปรเจค</h3>
+    <p>เลือกวิธีดาวน์โหลดตามความถนัด</p>
+
+    <div class="method-tabs">
+      <div class="method-tab active">วิธี A — Git Clone</div>
+      <div class="method-tab inactive">วิธี B — Download ZIP</div>
+    </div>
+    <div class="method-body">
+      <p><strong style="color:var(--green);">วิธี A — Git Clone</strong> (แนะนำ ถ้ามี Git)</p>
+      <p>ถ้ายังไม่มี Git ดาวน์โหลดได้ที่ <code>https://git-scm.com</code></p>
+      <pre><span class="g"># เปิด Command Prompt แล้วพิมพ์</span>
+git clone https://github.com/&lt;your-username&gt;/ssh-screen.git
+cd ssh-screen</pre>
+
+      <p style="margin-top:16px;"><strong style="color:var(--cyan);">วิธี B — Download ZIP</strong> (ไม่ต้องติดตั้ง Git)</p>
+      <ol style="padding-left:20px; color:var(--muted); font-size:0.9rem; line-height:2;">
+        <li>ไปที่หน้า GitHub repository</li>
+        <li>กดปุ่ม <strong style="color:var(--text);">Code</strong> (สีเขียว) → <strong style="color:var(--text);">Download ZIP</strong></li>
+        <li>Extract ZIP ไปยังโฟลเดอร์ที่ต้องการ เช่น <code>C:\ssh-screen</code></li>
+        <li>เปิด Command Prompt แล้ว <code>cd</code> เข้าไปในโฟลเดอร์นั้น</li>
+      </ol>
+      <pre><span class="g"># ตัวอย่าง ถ้า extract ไปที่ C:\ssh-screen</span>
+cd C:\ssh-screen</pre>
+    </div>
+  </div>
+
+  <!-- Step 3: npm install -->
+  <div class="card">
+    <h3>Step 3 — ติดตั้ง Dependencies</h3>
+    <p>รันคำสั่งนี้ใน Command Prompt ภายในโฟลเดอร์โปรเจค:</p>
+
+    <pre><span class="g">C:\ssh-screen&gt;</span> npm install</pre>
+
+    <p>npm จะดาวน์โหลดและติดตั้ง packages ที่จำเป็น:</p>
+    <div class="verify-block">
+      <span class="out">added 87 packages in 12s</span><br>
+      <span class="out">3 packages are looking for funding</span><br>
+      <span class="ok">✓ express  ✓ ws  ✓ ssh2</span>
+    </div>
+
+    <div class="highlight-box">
+      <strong>⚠ ข้อควรรู้:</strong> ระหว่าง <code>npm install</code> อาจมีข้อความเตือนสีเหลือง (<code>WARN</code>)
+      ปรากฏขึ้น — ไม่เป็นอะไร ให้ดูว่าไม่มี <code>ERROR</code> ก็เพียงพอ
+    </div>
+  </div>
+
+  <!-- Step 4: npm start -->
+  <div class="card">
+    <h3>Step 4 — เริ่มรันเซิร์ฟเวอร์</h3>
+    <pre><span class="g">C:\ssh-screen&gt;</span> npm start</pre>
+
+    <p>ถ้าสำเร็จจะขึ้น:</p>
+    <div class="verify-block">
+      <span class="ok">✓ Web SSH Client server is running on http://localhost:3000</span>
+    </div>
+
+    <div class="highlight-box success">
+      <strong>✓ เซิร์ฟเวอร์รันอยู่!</strong> อย่าปิด Command Prompt window นี้
+      — ถ้าปิด server จะหยุดทำงาน
+    </div>
+
+    <p style="margin-top: 8px;">ถ้าต้องการเปลี่ยน port จาก 3000 เป็นอื่น:</p>
+    <pre><span class="g"># PowerShell</span>
+$env:PORT=8080; node server.js
+
+<span class="g"># Command Prompt</span>
+set PORT=8080 && node server.js</pre>
+  </div>
+
+  <!-- Step 5: Open Browser -->
+  <div class="card">
+    <h3>Step 5 — เปิดเบราว์เซอร์</h3>
+    <p>เปิด Chrome, Edge, หรือ Firefox แล้วไปที่:</p>
+
+    <pre>http://localhost:3000</pre>
+
+    <p>หน้า <strong>Montien Tech Terminal</strong> จะโหลดขึ้นมา พร้อมใช้งานทันที</p>
+
+    <div class="highlight-box info">
+      <strong>ℹ เข้าจากอุปกรณ์อื่นในเครือข่ายเดียวกัน:</strong>
+      หา IP ของ Windows ด้วยคำสั่ง <code>ipconfig</code> แล้วใช้
+      <code>http://&lt;IP&gt;:3000</code> แทน localhost
+      (เช่น <code>http://192.168.1.50:3000</code>)
+    </div>
+  </div>
+
+  <!-- Step 6: Connect SSH -->
+  <div class="card">
+    <h3>Step 6 — เชื่อมต่อ SSH</h3>
+    <p>กรอกข้อมูล SSH server ในแผงด้านซ้าย แล้วกด <strong>เชื่อมต่อ SSH</strong></p>
+    <ul class="feature-list">
+      <li><span class="icon">🖥</span><span><strong>Address</strong> — IP หรือ hostname ของ SSH server (เช่น <code>192.168.1.100</code>)</span></li>
+      <li><span class="icon">👤</span><span><strong>Username</strong> — ชื่อผู้ใช้บน server (เช่น <code>root</code> หรือ <code>ubuntu</code>)</span></li>
+      <li><span class="icon">🔢</span><span><strong>Port</strong> — default คือ <code>22</code></span></li>
+      <li><span class="icon">🔑</span><span><strong>Password</strong> — รหัสผ่าน SSH</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Firewall ════════════════════════════ -->
+<section class="section">
+  <div class="section-title">03 — Windows Firewall</div>
+
+  <div class="card">
+    <h3>🔥 อนุญาต Port 3000 ผ่าน Firewall</h3>
+    <p>
+      ถ้าต้องการให้อุปกรณ์อื่นในเครือข่ายเข้าถึงได้ ต้องเพิ่ม rule ใน Windows Defender Firewall
+    </p>
+
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>เปิด Windows Defender Firewall</strong>
+          <p>กด <kbd>Win</kbd> + <kbd>S</kbd> ค้นหา <strong>"Windows Defender Firewall"</strong> → เปิด</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>เพิ่ม Inbound Rule ใหม่</strong>
+          <p>คลิก <strong>Advanced settings</strong> → <strong>Inbound Rules</strong> → <strong>New Rule...</strong></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ตั้งค่า Rule</strong>
+          <p>เลือก <strong>Port</strong> → <strong>TCP</strong> → Specific local ports: <code>3000</code> → Allow the connection → ตั้งชื่อ เช่น <code>SSH Terminal</code></p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="highlight-box">
+      <strong>⚠ ทางเลือกที่เร็วกว่า:</strong> รันคำสั่งนี้ใน PowerShell (Run as Administrator):
+      <pre>New-NetFirewallRule -DisplayName "SSH Terminal" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: PM2 (Optional) ══════════════════════ -->
+<section class="section">
+  <div class="section-title">04 — รันตลอดเวลา (Optional: PM2)</div>
+
+  <div class="card">
+    <h3>🔄 ใช้ PM2 ให้รัน Background และ Auto-Start</h3>
+    <p>
+      โดย default ถ้าปิด Command Prompt — server จะหยุด ใช้ <strong>PM2</strong>
+      เพื่อให้รัน background และเริ่มอัตโนมัติเมื่อ Windows เปิด
+    </p>
+
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>ติดตั้ง PM2 แบบ global</strong>
+          <pre>npm install -g pm2</pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ติดตั้ง pm2-windows-startup</strong>
+          <p>เพื่อให้ PM2 เริ่มอัตโนมัติเมื่อ Windows boot</p>
+          <pre>npm install -g pm2-windows-startup
+pm2-startup install</pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>เริ่มรัน server ด้วย PM2</strong>
+          <pre>cd C:\ssh-screen
+pm2 start server.js --name ssh-terminal</pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>บันทึก process list</strong>
+          <pre>pm2 save</pre>
+          <p>PM2 จะจำ process นี้และเริ่มใหม่อัตโนมัติเมื่อ Windows reboot</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="card" style="margin-top:16px; box-shadow:none; border-color:#27272a;">
+      <h3>คำสั่ง PM2 ที่ใช้บ่อย</h3>
+      <pre><span class="g"># ดูสถานะทั้งหมด</span>
+pm2 status
+
+<span class="g"># ดู log realtime</span>
+pm2 logs ssh-terminal
+
+<span class="g"># Restart</span>
+pm2 restart ssh-terminal
+
+<span class="g"># หยุด</span>
+pm2 stop ssh-terminal
+
+<span class="g"># ลบออกจาก PM2</span>
+pm2 delete ssh-terminal</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Troubleshooting ════════════════════ -->
+<section class="section">
+  <div class="section-title">05 — แก้ไขปัญหาที่พบบ่อย</div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ <code>node</code> / <code>npm</code> ไม่รู้จัก (command not found)</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔄</span><span>ปิดแล้วเปิด Command Prompt ใหม่หลังติดตั้ง Node.js</span></li>
+      <li><span class="icon">🔍</span><span>ตรวจสอบว่า Node.js อยู่ใน PATH: <code>where node</code></span></li>
+      <li><span class="icon">⚙</span><span>ถ้ายังไม่ได้ ติดตั้ง Node.js ใหม่แล้วติ๊ก <strong>"Add to PATH"</strong> ในขั้นตอน installer</span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ Port 3000 ถูกใช้งานอยู่แล้ว (<code>EADDRINUSE</code>)</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔍</span><span>หา process ที่ใช้ port นั้น: <code>netstat -ano | findstr :3000</code></span></li>
+      <li><span class="icon">🔧</span><span>เปลี่ยน port: <code>set PORT=8080 && node server.js</code></span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ <code>npm install</code> ล้มเหลว / Error ตอนติดตั้ง ssh2</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔨</span><span>ติดตั้ง <strong>Windows Build Tools</strong>: <code>npm install -g windows-build-tools</code> (ใน PowerShell Admin)</span></li>
+      <li><span class="icon">📥</span><span>หรือติดตั้ง <strong>Visual C++ Build Tools</strong> จาก Visual Studio Installer</span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ เปิด Browser แล้ว "This site can't be reached"</h3>
+    <ul class="feature-list">
+      <li><span class="icon">▶</span><span>ตรวจสอบว่า <code>npm start</code> ยังรันอยู่ใน Command Prompt</span></li>
+      <li><span class="icon">🌐</span><span>ใช้ <code>http://</code> ไม่ใช่ <code>https://</code></span></li>
+      <li><span class="icon">🔢</span><span>ใช้ port ที่ถูกต้อง default คือ <code>:3000</code></span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>❌ เชื่อมต่อ SSH ไม่ได้จากเครื่องอื่น</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔥</span><span>ตรวจสอบ Windows Firewall ว่าเปิด port 3000 แล้ว (ดู Section 03)</span></li>
+      <li><span class="icon">🌐</span><span>ใช้ IP จริงของเครื่อง Windows ไม่ใช่ <code>localhost</code> (ดู <code>ipconfig</code>)</span></li>
+      <li><span class="icon">📡</span><span>ตรวจสอบว่าทั้งสองเครื่องอยู่ในเครือข่ายเดียวกัน</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Quick Reference ════════════════════ -->
+<section class="section">
+  <div class="section-title">06 — Quick Reference</div>
+
+  <div class="card">
+    <h3>สรุปคำสั่งทั้งหมด</h3>
+    <pre><span class="g"># ตรวจสอบ Node.js</span>
+<span class="am">C:\&gt;</span> node --version
+<span class="am">C:\&gt;</span> npm --version
+
+<span class="g"># ดาวน์โหลดโปรเจค (ถ้าใช้ Git)</span>
+<span class="am">C:\&gt;</span> git clone https://github.com/&lt;user&gt;/ssh-screen.git
+<span class="am">C:\&gt;</span> cd ssh-screen
+
+<span class="g"># ติดตั้ง dependencies</span>
+<span class="am">C:\ssh-screen&gt;</span> npm install
+
+<span class="g"># รัน server (ปกติ)</span>
+<span class="am">C:\ssh-screen&gt;</span> npm start
+
+<span class="g"># รัน server บน port อื่น (PowerShell)</span>
+<span class="am">PS C:\ssh-screen&gt;</span> $env:PORT=8080; node server.js
+
+<span class="g"># รัน background ด้วย PM2</span>
+<span class="am">C:\ssh-screen&gt;</span> npm install -g pm2 pm2-windows-startup
+<span class="am">C:\ssh-screen&gt;</span> pm2-startup install
+<span class="am">C:\ssh-screen&gt;</span> pm2 start server.js --name ssh-terminal
+<span class="am">C:\ssh-screen&gt;</span> pm2 save
+
+<span class="g"># เปิดแอปในเบราว์เซอร์</span>
+http://localhost:3000</pre>
+  </div>
+
+  <div class="highlight-box danger">
+    <strong>⚠ Security:</strong> อย่า expose port 3000 ออก internet โดยตรง
+    แนะนำให้ใช้เฉพาะภายใน private network หรือ VPN เท่านั้น
+  </div>
+</section>
+
+</div><!-- end wrapper -->
+
+<div class="footer">
+  <p>MONTIEN TECH TERMINAL &nbsp;·&nbsp; <span class="version">v1.0.0</span> &nbsp;·&nbsp; WINDOWS INSTALLATION GUIDE</p>
+  <p style="margin-top:6px;">LAST UPDATED 2026-06-20</p>
+</div>
+
+</body>
+</html>
