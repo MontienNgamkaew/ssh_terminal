@@ -1,0 +1,875 @@
+/* 
+  Montien Tech Terminal - Retro 16-Bit Stylesheet
+  Combines pixel-art aesthetic, solid shadows, and CRT scanlines.
+*/
+
+:root {
+  --font-family-base: 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-pixel: 'Silkscreen', 'Press Start 2P', monospace;
+  --font-family-mono: 'JetBrains Mono', monospace;
+
+  /* Saturated Retro Colors */
+  --bg-dark: #000000;
+  --bg-grid: #09090b;
+  --color-border: #3f3f46;
+  --color-border-dark: #000000;
+  
+  --color-primary: #39ff14;     /* Retro Neon Green */
+  --color-primary-dark: #2bc40f;
+  --color-secondary: #ff007f;   /* Retro Cyber Pink */
+  --color-secondary-dark: #cc0066;
+  --color-accent: #00f0ff;      /* Retro Cyan */
+  --color-warning: #ffb000;     /* Retro Amber */
+  --color-danger: #ff3333;      /* Retro Red */
+  
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  
+  --shadow-retro: 5px 5px 0px #000000;
+  --shadow-retro-small: 3px 3px 0px #000000;
+  --transition-fast: 0.1s steps(4); /* Steps transition for pixel-art feel! */
+}
+
+/* Base Reset & Grid Background */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--bg-grid);
+  /* Retro Grid Pattern */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  image-rendering: pixelated;
+}
+
+.pixel-text {
+  font-family: var(--font-family-pixel);
+  text-transform: uppercase;
+}
+
+.pixel-text-small {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* App Container Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 16px;
+  gap: 16px;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #18181b;
+  border: 4px solid var(--color-border-dark);
+  box-shadow: var(--shadow-retro);
+  image-rendering: pixelated;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-image {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated; /* Crucial for retro pixel art */
+  border: 2px solid var(--color-border-dark);
+  background-color: #27272a;
+  padding: 2px;
+}
+
+.header-logo h1 {
+  font-family: 'Silkscreen', monospace;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-shadow: 2px 2px 0px #000;
+  letter-spacing: 1px;
+}
+
+.badge {
+  font-size: 0.75rem;
+  background: var(--bg-dark);
+  color: var(--color-primary);
+  padding: 4px 8px;
+  border: 2px solid var(--color-primary);
+  font-weight: 600;
+}
+
+.badge.pixel-badge {
+  font-family: 'Silkscreen', monospace;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  background: var(--bg-dark);
+  padding: 6px 14px;
+  border: 2px solid var(--color-border-dark);
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border: 2px solid #000000;
+}
+
+.status-indicator.disconnected {
+  background-color: var(--color-danger);
+  box-shadow: 0 0 6px var(--color-danger);
+}
+
+.status-indicator.connected {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 6px var(--color-primary);
+}
+
+.status-indicator.connecting {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 6px var(--color-warning);
+  animation: pulse 1s infinite steps(2);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* App Body Layout */
+.app-body {
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  min-height: 0;
+  transition: gap var(--transition-fast);
+}
+
+.sidebar-hidden .app-body {
+  gap: 0;
+}
+
+/* Retro Panels */
+.panel {
+  background-color: #18181b;
+  border: 4px solid var(--color-border-dark);
+  box-shadow: var(--shadow-retro);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Connection Panel */
+.connection-panel {
+  flex: 0 0 350px;
+  width: 350px;
+  padding: 16px;
+  gap: 14px;
+  overflow-y: auto;
+  transition: flex var(--transition-fast), width var(--transition-fast), padding var(--transition-fast), opacity var(--transition-fast), border var(--transition-fast);
+}
+
+.sidebar-hidden .connection-panel {
+  flex: 0 0 0px;
+  width: 0px;
+  padding: 0px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0px solid transparent;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 4px solid var(--color-border-dark);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.panel-header i {
+  color: var(--color-primary);
+}
+
+.panel-header h2 {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+/* Form Styles */
+.connection-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.col-8 { flex: 0 0 calc(66.666% - 5px); }
+.col-4 { flex: 0 0 calc(33.333% - 5px); }
+
+label {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.input-wrapper input {
+  width: 100%;
+  padding: 6px 10px 6px 36px;
+  background-color: var(--bg-dark);
+  border: 3px solid var(--color-border-dark);
+  color: var(--color-primary);
+  font-family: var(--font-family-base);
+  font-size: 0.8rem;
+  transition: border-color var(--transition-fast);
+}
+
+.form-group.col-4 .input-wrapper input {
+  padding-left: 10px;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-toggle-password:hover {
+  color: var(--color-primary);
+}
+
+/* Buttons (Arcade Block Style) */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+button.btn-primary {
+  flex: 1;
+  background-color: var(--color-primary);
+  color: var(--bg-dark);
+  border: 3px solid var(--color-border-dark);
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-retro-small);
+  transform: translate(0, 0);
+  transition: all var(--transition-fast);
+}
+
+button.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+button.btn-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+button.btn-secondary {
+  background-color: var(--color-secondary);
+  color: #ffffff;
+  border: 3px solid var(--color-border-dark);
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.7rem;
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-shadow: var(--shadow-retro-small);
+  transform: translate(0, 0);
+  transition: all var(--transition-fast);
+}
+
+button.btn-secondary:hover {
+  background-color: var(--color-secondary-dark);
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+button.btn-secondary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+.divider {
+  border: 0;
+  height: 4px;
+  background-color: var(--color-border-dark);
+  margin: 4px 0;
+}
+
+/* Profiles Section */
+.profiles-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.section-title h3 {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.65rem;
+}
+
+.profiles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.empty-profiles {
+  text-align: center;
+  padding: 12px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  border: 3px dashed var(--color-border);
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background-color: var(--bg-dark);
+  border: 3px solid var(--color-border-dark);
+  transition: border-color var(--transition-fast);
+}
+
+.profile-card:hover {
+  border-color: var(--color-accent);
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.profile-host {
+  font-size: 0.65rem;
+  color: var(--color-primary);
+  font-family: var(--font-family-mono);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-profile-action {
+  background-color: #27272a;
+  border: 2px solid var(--color-border-dark);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.btn-profile-action:hover {
+  color: #ffffff;
+  background-color: #3f3f46;
+}
+
+.btn-profile-action.connect:hover {
+  background-color: var(--color-primary);
+  color: #000000;
+}
+
+.btn-profile-action.delete:hover {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}
+
+/* Macbook Window Terminal Panel */
+.terminal-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* 16-Bit Style Terminal Window Frame */
+.macbook-window {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border: 4px solid var(--color-border-dark);
+  background-color: #000000;
+  box-shadow: var(--shadow-retro);
+  overflow: hidden;
+}
+
+/* Window Titlebar (Classic OS Look) */
+.window-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  background-color: #27272a;
+  border-bottom: 4px solid var(--color-border-dark);
+  padding: 0 12px;
+  user-select: none;
+}
+
+/* Classic Square Pixel Buttons */
+.window-buttons {
+  display: flex;
+  gap: 6px;
+  width: 100px;
+}
+
+.window-buttons .dot {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-border-dark);
+  display: inline-block;
+  cursor: pointer;
+}
+
+.window-buttons .close-btn { background-color: var(--color-danger); }
+.window-buttons .minimize-btn { background-color: var(--color-warning); }
+.window-buttons .maximize-btn { background-color: var(--color-primary); }
+
+.window-buttons:hover .close-btn::after {
+  content: "X";
+  font-family: var(--font-family-pixel);
+  font-size: 8px;
+  color: #000000;
+  font-weight: 700;
+  position: absolute;
+  transform: translate(3px, 1px);
+}
+
+.window-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.window-title-container i {
+  width: 14px;
+  height: 14px;
+  color: var(--color-primary);
+}
+
+.window-title {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.window-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 250px;
+  justify-content: flex-end;
+}
+
+/* Retro Theme Selector */
+.theme-select-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--bg-dark);
+  border: 2px solid var(--color-border-dark);
+  padding: 3px 6px;
+  height: 28px;
+}
+
+.theme-select-wrapper i {
+  color: var(--color-primary);
+  width: 12px;
+  height: 12px;
+}
+
+.theme-select-wrapper select {
+  background: transparent;
+  border: none;
+  color: var(--color-primary);
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.7rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.theme-select-wrapper select option {
+  background-color: #18181b;
+  color: #ffffff;
+}
+
+/* Action Buttons */
+.window-action-btn {
+  background-color: var(--bg-dark);
+  border: 2px solid var(--color-border-dark);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.window-action-btn:hover {
+  background-color: #27272a;
+}
+
+.window-action-btn.disconnect-btn {
+  color: var(--color-danger);
+  border-color: var(--color-border-dark);
+}
+
+.window-action-btn.disconnect-btn:hover {
+  background-color: var(--color-danger);
+  color: #ffffff;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Terminal Content & CRT Scanlines */
+.terminal-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* CRT Scanlines and curvature simulation */
+.terminal-content::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  /* Horizontal scanlines pattern */
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.3) 50%
+  );
+  background-size: 100% 4px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+#terminal-container {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  z-index: 1;
+}
+
+/* Custom terminal scrollbars */
+.xterm-viewport::-webkit-scrollbar {
+  width: 10px;
+}
+.xterm-viewport::-webkit-scrollbar-track {
+  background-color: #000000;
+  border-left: 2px solid var(--color-border-dark);
+}
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background-color: #27272a;
+  border: 2px solid var(--color-border-dark);
+}
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary);
+}
+
+/* Connecting Overlay */
+.terminal-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.overlay-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #18181b;
+  border-top-color: var(--color-primary);
+  animation: spin 0.8s infinite steps(4); /* Steps animation for retro look */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#overlay-message {
+  font-family: 'Silkscreen', monospace;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+}
+
+/* Dedicated Thai Command Input Bar (Retro Cyber styling) */
+.thai-command-bar {
+  background-color: #18181b;
+  border-top: 4px solid var(--color-border-dark);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.command-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--bg-dark);
+  border: 3px solid var(--color-border-dark);
+  padding: 2px 4px 2px 10px;
+}
+
+.command-input-container:focus-within {
+  border-color: var(--color-primary);
+}
+
+.prompt-symbol {
+  font-family: var(--font-family-pixel);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 1rem;
+  user-select: none;
+  animation: blink 1s infinite steps(2);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+#thai-command-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--font-family-base);
+  font-size: 0.95rem;
+  padding: 8px 0;
+}
+
+#thai-command-input:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+#thai-command-input::placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-family-base);
+}
+
+.btn-send {
+  background-color: var(--color-primary);
+  border: 2px solid var(--color-border-dark);
+  color: #000000;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.btn-send:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-send:disabled {
+  background-color: #27272a;
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.btn-send i {
+  width: 14px;
+  height: 14px;
+}
+
+.command-bar-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.tip-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.tip-text i {
+  width: 12px;
+  height: 12px;
+}
+
+.encoding-status {
+  background-color: rgba(57, 255, 20, 0.1);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 1px 6px;
+  font-weight: 500;
+  font-family: var(--font-family-pixel);
+  font-size: 0.65rem;
+}
+
+/* Custom retro scrollbars for panels */
+.connection-panel::-webkit-scrollbar,
+.profiles-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.connection-panel::-webkit-scrollbar-track,
+.profiles-list::-webkit-scrollbar-track {
+  background-color: var(--bg-dark);
+}
+
+.connection-panel::-webkit-scrollbar-thumb,
+.profiles-list::-webkit-scrollbar-thumb {
+  background-color: #27272a;
+  border: 2px solid var(--color-border-dark);
+}
+
+.connection-panel::-webkit-scrollbar-thumb:hover,
+.profiles-list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .app-container {
+    height: auto;
+    overflow-y: auto;
+  }
+  
+  .app-body {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .connection-panel {
+    flex: none;
+    width: 100%;
+    max-height: 400px;
+  }
+  
+  .macbook-window {
+    height: 480px;
+  }
+}

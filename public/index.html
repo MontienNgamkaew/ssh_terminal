@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montien Tech Terminal | 16-Bit Retro SSH Client</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Prompt:wght@300;400;500;600;700&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <!-- xterm.css -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <img src="assets/logo.png" alt="Montien Tech Terminal Logo" class="logo-image">
+        <h1 class="pixel-text">Montien Tech Terminal</h1>
+        <span class="badge pixel-badge">v1.0.0</span>
+      </div>
+      <div class="header-status">
+        <span class="status-indicator disconnected" id="connection-status-dot"></span>
+        <span id="connection-status-text" class="pixel-text-small">ไม่ได้เชื่อมต่อ</span>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-body">
+      <!-- Left Panel: Connection & Session Manager -->
+      <section class="panel connection-panel">
+        <div class="panel-header">
+          <i data-lucide="settings"></i>
+          <h2>ตั้งค่าการเชื่อมต่อ SSH</h2>
+        </div>
+        
+        <!-- Connection Form -->
+        <form id="connection-form" class="connection-form">
+          <div class="form-group">
+            <label for="ssh-host">Address (IP หรือ Hostname)</label>
+            <div class="input-wrapper">
+              <i data-lucide="server"></i>
+              <input type="text" id="ssh-host" placeholder="เช่น 192.168.1.100 หรือ server.com" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col-8">
+              <label for="ssh-username">Username</label>
+              <div class="input-wrapper">
+                <i data-lucide="user"></i>
+                <input type="text" id="ssh-username" placeholder="เช่น root, ubuntu" required>
+              </div>
+            </div>
+            <div class="form-group col-4">
+              <label for="ssh-port">Port</label>
+              <div class="input-wrapper">
+                <input type="number" id="ssh-port" placeholder="22" value="22" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ssh-password">Password</label>
+            <div class="input-wrapper">
+              <i data-lucide="lock"></i>
+              <input type="password" id="ssh-password" placeholder="ใส่รหัสผ่านเข้าเครื่อง Linux" required>
+              <button type="button" class="btn-toggle-password" id="toggle-password">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="btn-connect">
+              <i data-lucide="play"></i>
+              <span>เชื่อมต่อ SSH</span>
+            </button>
+            <button type="button" class="btn-secondary" id="btn-save-profile" title="บันทึกโปรไฟล์นี้">
+              <i data-lucide="save"></i>
+              <span>บันทึก</span>
+            </button>
+          </div>
+        </form>
+
+        <hr class="divider">
+
+        <!-- Saved Profiles Manager -->
+        <div class="profiles-section">
+          <div class="section-title">
+            <i data-lucide="folder-heart"></i>
+            <h3>โปรไฟล์ที่บันทึกไว้</h3>
+          </div>
+          <div class="profiles-list" id="profiles-list">
+            <!-- Saved profiles will be inserted here dynamically -->
+            <div class="empty-profiles">ไม่มีโปรไฟล์ที่บันทึกไว้</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: macOS-Style Terminal -->
+      <section class="panel terminal-panel">
+        <div class="macbook-window">
+          <!-- macOS Window Titlebar -->
+          <div class="window-titlebar">
+            <div class="window-buttons">
+              <span class="dot close-btn" title="ปิดการเชื่อมต่อ" id="mac-close-btn"></span>
+              <span class="dot minimize-btn"></span>
+              <span class="dot maximize-btn"></span>
+            </div>
+            
+            <div class="window-title-container">
+              <i data-lucide="cpu" class="title-icon"></i>
+              <span class="window-title" id="terminal-window-title">SSH Terminal (ยังไม่ได้เชื่อมต่อ)</span>
+            </div>
+
+            <div class="window-actions">
+              <!-- Theme Picker -->
+              <div class="theme-select-wrapper">
+                <i data-lucide="palette"></i>
+                <select id="terminal-theme" title="เลือกธีมหน้าจอ">
+                  <option value="retro-green" selected>Retro Green</option>
+                  <option value="macos-dark">macOS Dark</option>
+                  <option value="dracula">Dracula (แนะนำ)</option>
+                  <option value="monokai">Monokai</option>
+                  <option value="solarized-dark">Solarized Dark</option>
+                  <option value="retro-amber">Retro Amber</option>
+                </select>
+              </div>
+
+              <!-- Toggle Sidebar -->
+              <button id="btn-toggle-sidebar" class="window-action-btn" title="ซ่อน/แสดง แผงควบคุมด้านข้าง">
+                <i data-lucide="layout-sidebar"></i>
+              </button>
+
+              <!-- Clear Terminal -->
+              <button id="btn-clear-terminal" class="window-action-btn" title="ล้างหน้าจอ terminal">
+                <i data-lucide="trash-2"></i>
+              </button>
+
+              <!-- Disconnect -->
+              <button id="btn-disconnect" class="window-action-btn disconnect-btn hidden" title="ตัดการเชื่อมต่อ">
+                <i data-lucide="power"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- xterm.js Shell Container -->
+          <div class="terminal-content">
+            <div id="terminal-container"></div>
+            <!-- Notification Overlay inside Terminal -->
+            <div id="terminal-overlay" class="terminal-overlay hidden">
+              <div class="overlay-spinner"></div>
+              <p id="overlay-message">กำลังเชื่อมต่อ...</p>
+            </div>
+          </div>
+
+          <!-- Dedicated Thai / Command Input Bar -->
+          <div class="thai-command-bar">
+            <div class="command-input-container">
+              <span class="prompt-symbol">&gt;</span>
+              <input type="text" id="thai-command-input" placeholder="พิมพ์คำสั่งของคุณที่นี่ (รองรับภาษาไทย และคำสั่งของ claude/antigravity cli)..." autocomplete="off" disabled>
+              <button type="button" id="btn-send-command" class="btn-send" title="ส่งคำสั่ง (หรือกด Enter)" disabled>
+                <i data-lucide="send"></i>
+              </button>
+            </div>
+            <div class="command-bar-footer">
+              <div class="tip-text">
+                <i data-lucide="info"></i>
+                <span>พิมพ์คำสั่งแล้วกด <strong>Enter</strong> เพื่อสั่งงานผ่าน SSH. กด <strong>ลูกศร ขึ้น/ลง</strong> เพื่อดูประวัติคำสั่งล่าสุด</span>
+              </div>
+              <div class="encoding-status">UTF-8 Thai Support</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- xterm.js script -->
+  <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+  <!-- xterm fit addon script -->
+  <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+  <!-- App JS -->
+  <script src="app.js"></script>
+</body>
+</html>

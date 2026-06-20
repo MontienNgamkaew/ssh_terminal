@@ -1,0 +1,14 @@
+{
+  "name": "ssh-screen",
+  "version": "1.0.0",
+  "description": "Web-based SSH client terminal supporting Thai input, designed like macOS for running interactive CLIs like claude code",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ssh2": "^1.15.0",
+    "ws": "^8.17.0"
+  }
+}
