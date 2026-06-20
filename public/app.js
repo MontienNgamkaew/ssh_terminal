@@ -76,7 +76,11 @@ const autoRunToggle     = document.getElementById('auto-run-toggle');
 // ─── DOMContentLoaded ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
-  applyThemeStyles(themeSelect.value);
+  
+  // Load saved theme or default to Dracula
+  const savedTheme = localStorage.getItem('ssh_theme') || 'dracula';
+  themeSelect.value = savedTheme;
+  applyThemeStyles(savedTheme);
 
   if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', toggleSidebar);
 
@@ -515,7 +519,11 @@ macCloseBtn.addEventListener('click', () => {
   }
 });
 
-themeSelect.addEventListener('change', (e) => applyThemeStyles(e.target.value));
+themeSelect.addEventListener('change', (e) => {
+  const selectedTheme = e.target.value;
+  applyThemeStyles(selectedTheme);
+  localStorage.setItem('ssh_theme', selectedTheme);
+});
 
 clearTerminalBtn.addEventListener('click', () => {
   const s = sessions[activeTabId];
