@@ -676,8 +676,8 @@ thaiCommandInput.addEventListener('keydown', (e) => {
   if (!session) return;
 
   if (e.key === 'Enter') {
-    if (e.isComposing) return;
     e.preventDefault();
+    if (e.isComposing || e.keyCode === 229) return;
     sendThaiCommand();
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();

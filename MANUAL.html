@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montien Tech Terminal — คู่มือการใช้งาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Prompt:wght@300;400;500;600&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --bg-card2: #27272a;
+      --border: #3f3f46;
+      --green: #39ff14;
+      --pink: #ff007f;
+      --cyan: #00f0ff;
+      --amber: #ffb000;
+      --red: #ff3333;
+      --purple: #bd93f9;
+      --text: #f8f8f2;
+      --muted: #a1a1aa;
+      --font-pixel: 'Silkscreen', monospace;
+      --font-body: 'Prompt', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 20px 20px;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── Layout ─────────────────────────────────────────── */
+    .wrapper { max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* ── Hero ────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 56px 24px 48px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(57,255,20,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-family: var(--font-pixel);
+      font-size: 0.6rem;
+      color: var(--green);
+      border: 1px solid var(--green);
+      padding: 3px 10px;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .hero h1 {
+      font-family: var(--font-pixel);
+      font-size: clamp(1.1rem, 4vw, 2rem);
+      color: var(--green);
+      text-shadow: 0 0 20px rgba(57,255,20,0.4);
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .hero .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto 24px;
+    }
+    .hero .tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--bg-card);
+    }
+    .tag.green  { border-color: var(--green);  color: var(--green); }
+    .tag.cyan   { border-color: var(--cyan);   color: var(--cyan); }
+    .tag.pink   { border-color: var(--pink);   color: var(--pink); }
+    .tag.amber  { border-color: var(--amber);  color: var(--amber); }
+    .tag.purple { border-color: var(--purple); color: var(--purple); }
+
+    /* ── Section ─────────────────────────────────────────── */
+    .section { margin-top: 52px; }
+    .section-title {
+      font-family: var(--font-pixel);
+      font-size: 0.8rem;
+      color: var(--cyan);
+      letter-spacing: 0.12em;
+      border-left: 3px solid var(--cyan);
+      padding-left: 12px;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+    h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 10px; }
+    h3 { font-size: 1rem; font-weight: 600; color: var(--green); margin-bottom: 8px; }
+    p  { color: var(--muted); margin-bottom: 12px; }
+    p strong { color: var(--text); }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      box-shadow: 4px 4px 0 #000;
+    }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+    /* ── Feature List ────────────────────────────────────── */
+    .feature-list { list-style: none; }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #27272a;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-list .icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+    .feature-list strong { color: var(--text); }
+
+    /* ── UI Screenshot (ASCII mockup) ────────────────────── */
+    .mockup-wrap {
+      background: #000;
+      border: 1px solid #3f3f46;
+      box-shadow: 6px 6px 0 #000;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .mockup-bar {
+      background: #27272a;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #3f3f46;
+    }
+    .dot-r { width:11px; height:11px; border-radius:50%; background:#ff5555; display:inline-block; }
+    .dot-y { width:11px; height:11px; border-radius:50%; background:#f1fa8c; display:inline-block; }
+    .dot-g { width:11px; height:11px; border-radius:50%; background:#50fa7b; display:inline-block; }
+    .mockup-bar-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #636363;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .mockup-body {
+      display: flex;
+      min-height: 340px;
+    }
+    .mockup-sidebar {
+      width: 230px;
+      flex-shrink: 0;
+      border-right: 1px solid #27272a;
+      padding: 14px;
+      background: #111113;
+    }
+    .mockup-terminal {
+      flex: 1;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      background: #282a36;
+    }
+    .mockup-tabs {
+      background: #1e1f29;
+      border-bottom: 1px solid #3c3d40;
+      padding: 4px 8px 0;
+      display: flex;
+      gap: 4px;
+    }
+    .mtab {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      padding: 3px 12px;
+      background: #282a36;
+      color: #f8f8f2;
+      border: 1px solid #44475a;
+      border-bottom: none;
+    }
+    .mtab.inactive { background: #1e1f29; color: #636363; }
+    .mockup-screen {
+      flex: 1;
+      padding: 12px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+    .g  { color: #50fa7b; }
+    .c  { color: #8be9fd; }
+    .y  { color: #f1fa8c; }
+    .r  { color: #ff5555; }
+    .p  { color: #bd93f9; }
+    .w  { color: #f8f8f2; }
+    .d  { color: #636363; }
+    .pk { color: #ff79c6; }
+    .mockup-input-bar {
+      background: #1e1f29;
+      border-top: 1px solid #44475a;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mockup-input-bar span { color: var(--green); font-family: var(--font-mono); font-size: 0.75rem; }
+    .mockup-input-bar .field {
+      flex: 1;
+      background: #282a36;
+      border: 1px solid #44475a;
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #f8f8f2;
+    }
+    .mockup-input-bar .send-btn {
+      background: #39ff14;
+      color: #000;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border: none;
+    }
+
+    /* sidebar mockup elements */
+    .ms-label { font-family: var(--font-mono); font-size: 0.6rem; color: #71717a; margin-bottom: 3px; margin-top: 10px; }
+    .ms-input {
+      width: 100%;
+      background: #222225;
+      border: 1px solid #3f3f46;
+      padding: 5px 8px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: #f8f8f2;
+      margin-bottom: 4px;
+    }
+    .ms-btn {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      font-family: var(--font-pixel);
+      font-size: 0.5rem;
+      padding: 7px;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      margin-top: 6px;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .ms-heading {
+      font-family: var(--font-pixel);
+      font-size: 0.5rem;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #27272a;
+      margin-bottom: 8px;
+    }
+    .ms-profile {
+      background: #222225;
+      border: 1px solid #3f3f46;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ms-profile-name { font-family: var(--font-mono); font-size: 0.64rem; color: #f8f8f2; }
+    .ms-profile-host { font-family: var(--font-mono); font-size: 0.55rem; color: #71717a; }
+    .ms-profile-btn  { font-size: 0.65rem; color: var(--green); cursor: pointer; }
+
+    /* ── Code Block ─────────────────────────────────────── */
+    pre {
+      background: #000;
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      overflow-x: auto;
+      margin: 12px 0;
+      line-height: 1.7;
+      box-shadow: 4px 4px 0 #000;
+    }
+    code { font-family: var(--font-mono); font-size: 0.85em; color: var(--cyan); background: #18181b; padding: 2px 5px; }
+
+    /* ── Step List ──────────────────────────────────────── */
+    .step-list { counter-reset: steps; list-style: none; }
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid #1f1f22;
+      align-items: flex-start;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before {
+      content: counter(steps, decimal-leading-zero);
+      font-family: var(--font-pixel);
+      font-size: 0.65rem;
+      color: var(--green);
+      background: #000;
+      border: 1px solid var(--green);
+      min-width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 2px 2px 0 #000;
+    }
+    .step-content { flex: 1; }
+    .step-content strong { color: var(--text); display: block; margin-bottom: 4px; }
+    .step-content p { margin: 0; }
+
+    /* ── Keyboard Shortcut ─────────────────────────────── */
+    kbd {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      background: #222;
+      border: 1px solid #555;
+      border-bottom: 2px solid #333;
+      padding: 2px 7px;
+      color: var(--text);
+    }
+    .kbd-table { width: 100%; border-collapse: collapse; }
+    .kbd-table th { text-align: left; font-family: var(--font-pixel); font-size: 0.55rem; color: var(--cyan); letter-spacing: 0.1em; padding: 8px 12px; border-bottom: 1px solid #27272a; }
+    .kbd-table td { padding: 9px 12px; border-bottom: 1px solid #1a1a1c; font-size: 0.88rem; color: var(--muted); vertical-align: middle; }
+    .kbd-table tr:last-child td { border-bottom: none; }
+
+    /* ── Architecture ───────────────────────────────────── */
+    .arch-diagram {
+      background: #000;
+      border: 1px solid var(--border);
+      padding: 24px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.9;
+      color: var(--muted);
+      margin: 16px 0;
+      box-shadow: 4px 4px 0 #000;
+      overflow-x: auto;
+    }
+    .arch-diagram .box { color: var(--text); }
+    .arch-diagram .arrow { color: #44475a; }
+    .arch-diagram .label { color: var(--cyan); }
+    .arch-diagram .label2 { color: var(--amber); }
+    .arch-diagram .label3 { color: var(--green); }
+
+    /* ── Theme Swatches ─────────────────────────────────── */
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+    .theme-swatch {
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 3px 3px 0 #000;
+    }
+    .theme-swatch .swatch-bar { height: 28px; display: flex; align-items: center; padding: 0 10px; }
+    .theme-swatch .swatch-bar .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .theme-swatch .swatch-body { padding: 10px; font-family: var(--font-mono); font-size: 0.66rem; line-height: 1.8; }
+    .theme-swatch .name { text-align: center; font-family: var(--font-pixel); font-size: 0.5rem; padding: 6px; border-top: 1px solid var(--border); letter-spacing: 0.08em; }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 40px 20px 24px;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+    .footer p { font-family: var(--font-pixel); font-size: 0.52rem; color: #3f3f46; letter-spacing: 0.1em; }
+    .footer .version { color: var(--green); }
+
+    /* ── Status dots ────────────────────────────────────── */
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+    .status-dot.green  { background: #50fa7b; box-shadow: 0 0 6px #50fa7b; }
+    .status-dot.red    { background: #ff5555; box-shadow: 0 0 6px #ff5555; }
+    .status-dot.yellow { background: #f1fa8c; box-shadow: 0 0 6px #f1fa8c; }
+
+    /* ── Highlight box ──────────────────────────────────── */
+    .highlight-box {
+      border-left: 3px solid var(--amber);
+      background: rgba(255,176,0,0.05);
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+    .highlight-box strong { color: var(--amber); }
+    .highlight-box.info { border-color: var(--cyan); background: rgba(0,240,255,0.05); }
+    .highlight-box.info strong { color: var(--cyan); }
+    .highlight-box.success { border-color: var(--green); background: rgba(57,255,20,0.05); }
+    .highlight-box.success strong { color: var(--green); }
+
+    @media (max-width: 640px) {
+      .mockup-body { flex-direction: column; }
+      .mockup-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #27272a; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HERO ══════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-badge">DOCUMENTATION v1.0.0</div>
+  <h1>Montien Tech Terminal</h1>
+  <p class="subtitle">
+    Web SSH Client แบบเรโทร 16-Bit รองรับภาษาไทย, Multi-Tab, Auto-Reconnect
+    และ Pixel Art Mascot — ออกแบบมาเพื่อใช้งาน Claude Code และ CLI ผ่านเบราว์เซอร์
+  </p>
+  <div class="tags">
+    <span class="tag green">Node.js + Express</span>
+    <span class="tag cyan">WebSocket</span>
+    <span class="tag pink">ssh2</span>
+    <span class="tag purple">xterm.js v5</span>
+    <span class="tag amber">PWA Ready</span>
+    <span class="tag">MIT License</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+<!-- ═══════════════════════════ SECTION: ภาพรวม ══════════════════════════ -->
+<section class="section">
+  <div class="section-title">01 — ภาพรวมโปรเจค</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>คืออะไร?</h3>
+      <p>
+        <strong>Montien Tech Terminal</strong> คือ SSH Client ที่รันบน Node.js
+        และเปิดผ่านเบราว์เซอร์ได้ทันที ไม่ต้องติดตั้งซอฟต์แวร์เพิ่มเติม
+        ออกแบบมาเพื่อใช้งาน <strong>Claude Code CLI</strong> และ
+        เครื่องมือ interactive บน Linux Server โดยเฉพาะ
+      </p>
+      <p>
+        รองรับการพิมพ์คำสั่ง<strong>ภาษาไทย</strong>ผ่านช่อง input พิเศษ
+        ที่หลีกเลี่ยงปัญหา IME ของ browser ใน xterm.js
+      </p>
+    </div>
+    <div class="card">
+      <h3>ทำไมต้องใช้?</h3>
+      <ul class="feature-list">
+        <li><span class="icon">🌐</span><span>เข้าได้จาก<strong>ทุกอุปกรณ์</strong>ที่มีเบราว์เซอร์ — มือถือ, แท็บเล็ต, PC</span></li>
+        <li><span class="icon">🇹🇭</span><span>พิมพ์<strong>ภาษาไทย</strong>ส่งคำสั่งไปยัง server ได้จริง</span></li>
+        <li><span class="icon">🔁</span><span><strong>Auto-Reconnect</strong> ถ้าหลุดจะพยายามต่อใหม่อัตโนมัติ</span></li>
+        <li><span class="icon">📑</span><span>เปิด<strong>หลาย Tab</strong> เชื่อมต่อหลาย server พร้อมกัน</span></li>
+        <li><span class="icon">📦</span><span>รองรับการติดตั้งเป็น<strong>PWA</strong> ใช้งานได้แบบ native app</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: UI ภาพรวม ═══════════════════════════ -->
+<section class="section">
+  <div class="section-title">02 — หน้าตา UI ของระบบ</div>
+  <p>ด้านล่างคือจำลองหน้า UI จริงของ <strong>Montien Tech Terminal</strong></p>
+
+  <!-- Full app mockup -->
+  <div class="mockup-wrap">
+    <!-- Header bar -->
+    <div style="background:#111113; border-bottom:1px solid #27272a; padding:8px 16px; display:flex; align-items:center; gap:12px;">
+      <span style="font-family:var(--font-pixel); font-size:0.55rem; color:var(--green); letter-spacing:0.08em;">MONTIEN TECH TERMINAL</span>
+      <span style="font-family:var(--font-pixel); font-size:0.45rem; color:#3f3f46; background:#000; padding:2px 6px; border:1px solid #3f3f46;">v1.0.0</span>
+      <!-- mascot pixel art placeholder -->
+      <span style="flex:1; text-align:center; font-size:0.7rem; color:#3f3f46;">🦖 · · ·</span>
+      <!-- status -->
+      <span class="status-dot red"></span>
+      <span style="font-family:var(--font-pixel); font-size:0.45rem; color:#71717a;">ไม่ได้เชื่อมต่อ</span>
+    </div>
+
+    <!-- Body: sidebar + terminal -->
+    <div class="mockup-body">
+      <!-- Sidebar -->
+      <div class="mockup-sidebar">
+        <div class="ms-heading">⚙ ตั้งค่าการเชื่อมต่อ SSH</div>
+
+        <div class="ms-label">Address (IP หรือ Hostname)</div>
+        <div class="ms-input">192.168.1.100</div>
+
+        <div style="display:flex; gap:6px;">
+          <div style="flex:2">
+            <div class="ms-label">Username</div>
+            <div class="ms-input">root</div>
+          </div>
+          <div style="flex:1">
+            <div class="ms-label">Port</div>
+            <div class="ms-input">22</div>
+          </div>
+        </div>
+
+        <div class="ms-label">Password</div>
+        <div class="ms-input" style="letter-spacing:0.2em;">••••••••••</div>
+
+        <div class="ms-btn">▶ เชื่อมต่อ SSH</div>
+
+        <div style="border-top:1px solid #27272a; margin: 14px 0 10px;"></div>
+
+        <div class="ms-heading">🎮 ตัวละครหน้าจอ</div>
+        <div class="ms-input">🦖 ไดโนเสาร์ (Dino) ▾</div>
+
+        <div style="border-top:1px solid #27272a; margin: 14px 0 10px;"></div>
+
+        <div class="ms-heading">📁 โปรไฟล์ที่บันทึกไว้</div>
+        <div class="ms-profile">
+          <div>
+            <div class="ms-profile-name">root@production</div>
+            <div class="ms-profile-host">root@192.168.1.100:22</div>
+          </div>
+          <div class="ms-profile-btn">▶ ✕</div>
+        </div>
+        <div class="ms-profile">
+          <div>
+            <div class="ms-profile-name">ubuntu@staging</div>
+            <div class="ms-profile-host">ubuntu@10.0.0.5:2222</div>
+          </div>
+          <div class="ms-profile-btn">▶ ✕</div>
+        </div>
+      </div>
+
+      <!-- Terminal Panel -->
+      <div class="mockup-terminal">
+        <!-- macOS titlebar -->
+        <div class="mockup-bar">
+          <span class="dot-r"></span>
+          <span class="dot-y"></span>
+          <span class="dot-g"></span>
+          <span class="mockup-bar-title">SSH Terminal — root@192.168.1.100:22</span>
+          <div style="display:flex; gap:8px; margin-left:auto;">
+            <span style="font-size:0.65rem; color:#636363; cursor:pointer;">🎨</span>
+            <span style="font-size:0.65rem; color:#636363; cursor:pointer;">📋</span>
+            <span style="font-size:0.65rem; color:#636363; cursor:pointer;">▤</span>
+            <span style="font-size:0.65rem; color:#636363; cursor:pointer;">🗑</span>
+          </div>
+        </div>
+
+        <!-- Tab bar -->
+        <div class="mockup-tabs">
+          <div class="mtab">root@192.168.1.100</div>
+          <div class="mtab inactive">ubuntu@10.0.0.5</div>
+          <div class="mtab inactive" style="color:#39ff14;">+</div>
+        </div>
+
+        <!-- Terminal output -->
+        <div class="mockup-screen">
+          <div><span class="g">root@server</span><span class="w">:</span><span class="c">~</span><span class="w">$</span> <span class="w">claude</span></div>
+          <div><span class="p">╭─────────────────────────────────╮</span></div>
+          <div><span class="p">│</span> <span class="c">Claude Code</span> <span class="d">v1.0.56</span>             <span class="p">│</span></div>
+          <div><span class="p">╰─────────────────────────────────╯</span></div>
+          <div><span class="y">?</span> <span class="w">สวัสดีครับ ต้องการช่วยอะไรวันนี้?</span></div>
+          <div>&nbsp;</div>
+          <div><span class="g">❯</span> <span class="w">ช่วยสรุปโค้ดนี้ให้หน่อย</span><span class="g" style="animation:blink 1s infinite;">█</span></div>
+          <div>&nbsp;</div>
+          <div><span class="pk">⠙</span> <span class="d">กำลังประมวลผล...</span></div>
+        </div>
+
+        <!-- Input bar -->
+        <div class="mockup-input-bar">
+          <span>&gt;</span>
+          <div class="field">พิมพ์คำสั่งของคุณที่นี่ (รองรับภาษาไทย)...</div>
+          <div class="send-btn">SEND</div>
+        </div>
+        <div style="background:#1e1f29; padding:4px 12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.6rem; color:#636363;">ℹ กด <kbd style="background:#333; border:1px solid #555; padding:1px 4px; font-size:0.6rem;">Enter</kbd> เพื่อส่ง · <kbd style="background:#333; border:1px solid #555; padding:1px 4px; font-size:0.6rem;">↑↓</kbd> ดูประวัติคำสั่ง</span>
+          <span style="font-size:0.6rem; color:var(--cyan);">UTF-8 Thai Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Architecture ═════════════════════════ -->
+<section class="section">
+  <div class="section-title">03 — สถาปัตยกรรมระบบ</div>
+
+  <div class="arch-diagram">
+<span class="label">[ BROWSER ]</span>                              <span class="label2">[ SERVER: Node.js ]</span>                 <span class="label">[ TARGET ]</span>
+┌──────────────────────────────┐          ┌─────────────────────────────────┐      ┌────────────┐
+│                              │          │                                 │      │            │
+│  <span class="box">index.html + style.css</span>        │          │  <span class="box">server.js (Express)</span>             │      │  <span class="box">Linux SSH</span>  │
+│  <span class="box">app.js  +  xterm.js</span>           │          │  ├── static file serve          │      │  <span class="box">Server</span>     │
+│                              │          │  └── WebSocket handler          │      │            │
+│  ┌──────────────────────┐    │          │      ├── parse JSON messages     │      │  port 22   │
+│  │  <span class="label3">xterm.js Terminal</span>   │    │          │      ├── create SSH Client         │      │  (or any)  │
+│  │  (UI rendering)      │    │  <span class="arrow">──ws──▶</span>  │      └── pipe data↔stream       │<span class="arrow">──ssh──▶</span>│            │
+│  └──────────────────────┘    │  <span class="arrow">◀──ws──</span>  │                                 │<span class="arrow">◀──ssh──</span>│            │
+│                              │          │  <span class="box">ssh2.Client</span> (npm package)      │      │            │
+│  ┌──────────────────────┐    │          │  ├── shell() stream              │      └────────────┘
+│  │  <span class="label3">Thai Command Input</span>  │    │          │  ├── keepalive: 10s             │
+│  │  (IME-safe bar)      │    │          │  └── resize events              │
+│  └──────────────────────┘    │          │                                 │
+│                              │          │  <span class="box">WebSocket Server (ws)</span>          │
+│  localStorage:               │          │  ├── per-connection state       │
+│  · profiles  · theme         │          │  └── message routing           │
+│  · history   · mascot        │          │                                 │
+└──────────────────────────────┘          └─────────────────────────────────┘
+
+<span class="label">Protocol:</span>  Browser ←→ Node.js  =  <span class="label3">WebSocket (JSON messages)</span>
+<span class="label">Protocol:</span>  Node.js  ←→ Server   =  <span class="label2">SSH2 (TCP, xterm-256color)</span>
+</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>Message Types (WebSocket)</h3>
+      <pre><span class="g">// Browser → Server</span>
+{ type: "connect",  host, port,
+  username, password, cols, rows }
+{ type: "input",    data: "ls -la\r" }
+{ type: "resize",   cols, rows }
+
+<span class="g">// Server → Browser</span>
+{ type: "status",   message, level }
+{ type: "data",     data: "..." }
+{ type: "error",    message }</pre>
+    </div>
+    <div class="card">
+      <h3>Technology Stack</h3>
+      <ul class="feature-list">
+        <li><span class="icon">🟢</span><span><strong>Node.js</strong> — runtime หลัก</span></li>
+        <li><span class="icon">📦</span><span><strong>express</strong> — serve static files</span></li>
+        <li><span class="icon">🔌</span><span><strong>ws</strong> — WebSocket server</span></li>
+        <li><span class="icon">🔐</span><span><strong>ssh2</strong> — SSH client library</span></li>
+        <li><span class="icon">💻</span><span><strong>xterm.js v5</strong> — terminal emulator in browser</span></li>
+        <li><span class="icon">🔧</span><span><strong>xterm-addon-fit</strong> — auto-resize terminal</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Installation ════════════════════════ -->
+<section class="section">
+  <div class="section-title">04 — การติดตั้งและเริ่มใช้งาน</div>
+
+  <div class="card">
+    <h3>Requirements</h3>
+    <ul class="feature-list">
+      <li><span class="icon">✅</span><span><strong>Node.js</strong> v18 ขึ้นไป</span></li>
+      <li><span class="icon">✅</span><span><strong>npm</strong> (มากับ Node.js)</span></li>
+      <li><span class="icon">✅</span><span>เบราว์เซอร์ modern — Chrome, Firefox, Edge, Safari</span></li>
+      <li><span class="icon">✅</span><span>เครื่อง target ต้องเปิด SSH (port 22 หรือกำหนดเอง)</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>ขั้นตอนติดตั้ง</h3>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Clone หรือ Download โปรเจค</strong>
+          <pre>git clone &lt;repo-url&gt; ssh_terminal
+cd ssh_terminal</pre>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ติดตั้ง Dependencies</strong>
+          <pre>npm install</pre>
+          <p>จะติดตั้ง: <code>express</code>, <code>ws</code>, <code>ssh2</code></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>เริ่มเซิร์ฟเวอร์</strong>
+          <pre>npm start
+<span style="color:#50fa7b"># หรือ</span>
+node server.js</pre>
+          <p>จะขึ้น: <code>Web SSH Client server is running on http://localhost:3000</code></p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>เปิดเบราว์เซอร์</strong>
+          <pre>http://localhost:3000</pre>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <div class="highlight-box">
+    <strong>💡 Tip:</strong> ต้องการเปลี่ยน port ให้ตั้ง environment variable:
+    <pre>PORT=8080 node server.js</pre>
+  </div>
+
+  <div class="highlight-box info">
+    <strong>ℹ PWA Installation:</strong> เปิดเว็บใน Chrome แล้วกด "Install App" ที่ address bar
+    เพื่อใช้งานเหมือน native app (icon บน desktop/homescreen)
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Features ════════════════════════════ -->
+<section class="section">
+  <div class="section-title">05 — ฟีเจอร์และการใช้งาน</div>
+
+  <!-- Feature 1: SSH Connection -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>🔌 การเชื่อมต่อ SSH</h3>
+    <p>กรอกข้อมูล server ที่แผงด้านซ้าย แล้วกด <strong>เชื่อมต่อ SSH</strong></p>
+
+    <div class="mockup-wrap" style="max-width:320px;">
+      <div style="background:#111113; padding:10px 14px;">
+        <div class="ms-heading">⚙ ตั้งค่าการเชื่อมต่อ SSH</div>
+        <div class="ms-label">Address (IP หรือ Hostname)</div>
+        <div class="ms-input">192.168.1.100</div>
+        <div style="display:flex; gap:6px; margin-bottom:4px;">
+          <div style="flex:2"><div class="ms-label">Username</div><div class="ms-input">root</div></div>
+          <div style="flex:1"><div class="ms-label">Port</div><div class="ms-input">22</div></div>
+        </div>
+        <div class="ms-label">Password</div>
+        <div class="ms-input" style="letter-spacing:0.15em; display:flex; justify-content:space-between;">
+          <span>••••••••</span><span style="color:var(--cyan); cursor:pointer;">👁</span>
+        </div>
+        <div class="ms-btn">▶ เชื่อมต่อ SSH</div>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:12px;">
+      <li><span class="icon">🖥</span><span>รองรับ <strong>IP address</strong> และ <strong>hostname</strong> (เช่น server.example.com)</span></li>
+      <li><span class="icon">🔑</span><span>ยืนยันตัวตนด้วย <strong>password</strong> (กดปุ่มตาเพื่อดู/ซ่อน)</span></li>
+      <li><span class="icon">🔧</span><span>กำหนด port SSH ได้ (default: <code>22</code>)</span></li>
+      <li><span class="icon">💾</span><span>ระบบจำ host/username ล่าสุดไว้ใน localStorage อัตโนมัติ</span></li>
+    </ul>
+  </div>
+
+  <!-- Feature 2: Multi-Tab -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>📑 Multi-Tab — เปิดหลาย Session พร้อมกัน</h3>
+    <p>กดปุ่ม <strong>+</strong> ที่ tab bar เพื่อเปิด tab ใหม่ แต่ละ tab คือ SSH session แยกอิสระ</p>
+
+    <div class="mockup-wrap">
+      <div class="mockup-tabs" style="border:none; border-bottom:1px solid #3c3d40;">
+        <div class="mtab">root@prod-server</div>
+        <div class="mtab inactive">ubuntu@staging</div>
+        <div class="mtab inactive">admin@db-01</div>
+        <div class="mtab inactive" style="color:var(--green); padding:3px 8px;">＋</div>
+      </div>
+      <div style="background:#282a36; padding:14px 16px; font-family:var(--font-mono); font-size:0.75rem;">
+        <div><span class="g">root@prod-server</span><span class="w">:~$</span> <span class="d"># active session</span></div>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:12px;">
+      <li><span class="icon">🔌</span><span>แต่ละ tab มี WebSocket connection แยกกัน — ไม่รบกวนกัน</span></li>
+      <li><span class="icon">🏷</span><span>Tab title เปลี่ยนเป็น <code>username@host</code> เมื่อเชื่อมต่อสำเร็จ</span></li>
+      <li><span class="icon">✕</span><span>ปิด tab ได้ด้วยปุ่ม ✕ (tab สุดท้ายจะ disconnect แต่ไม่ถูกลบ)</span></li>
+      <li><span class="icon">⟳</span><span>Tab ที่กำลัง reconnect จะแสดง <code>[⟳] username@host</code></span></li>
+    </ul>
+  </div>
+
+  <!-- Feature 3: Auto-Reconnect -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>🔁 Auto-Reconnect — ต่อใหม่อัตโนมัติ</h3>
+    <p>หากการเชื่อมต่อขาดหาย ระบบจะพยายาม reconnect อัตโนมัติ <strong>สูงสุด 5 ครั้ง</strong></p>
+
+    <div class="mockup-wrap">
+      <div class="mockup-screen" style="background:#282a36; padding:12px 16px; font-family:var(--font-mono); font-size:0.74rem; line-height:1.8;">
+        <div><span class="g">root@server</span><span class="w">:~$</span> <span class="w">top</span></div>
+        <div><span class="d">... output ...</span></div>
+        <div>&nbsp;</div>
+        <div><span class="y">⚡ การเชื่อมต่อขาดหาย — reconnect ครั้งที่ 1/5 ใน 2s...</span></div>
+        <div><span class="y">⚡ การเชื่อมต่อขาดหาย — reconnect ครั้งที่ 2/5 ใน 4s...</span></div>
+        <div><span class="g">✓ เชื่อมต่อใหม่สำเร็จ!</span></div>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:12px;">
+      <li><span class="icon">⏱</span><span>Delay เพิ่มแบบ exponential backoff: 2s → 4s → 8s → 16s → 30s</span></li>
+      <li><span class="icon">5️⃣</span><span>หลังจาก 5 ครั้งไม่สำเร็จ จะหยุดและแสดงข้อความให้ต่อใหม่เอง</span></li>
+      <li><span class="icon">🛑</span><span>ถ้า<strong>ตัดการเชื่อมต่อด้วยตนเอง</strong> จะไม่ trigger auto-reconnect</span></li>
+    </ul>
+  </div>
+
+  <!-- Feature 4: Thai Input -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>🇹🇭 ช่องพิมพ์ภาษาไทย (Thai Command Input)</h3>
+    <p>
+      ช่อง input แยกต่างหากที่ด้านล่าง ช่วยให้พิมพ์ภาษาไทย (และคำสั่ง) ส่งไป SSH
+      ได้โดยไม่มีปัญหา IME ของ xterm.js
+    </p>
+
+    <div class="mockup-wrap">
+      <div class="mockup-input-bar">
+        <span>&gt;</span>
+        <div class="field">สวัสดีครับ ช่วยอธิบายไฟล์นี้ให้หน่อย</div>
+        <div class="send-btn">SEND</div>
+      </div>
+      <div style="background:#1e1f29; padding:5px 12px; display:flex; justify-content:space-between;">
+        <span style="font-size:0.6rem; color:#636363;">กด Enter เพื่อส่ง · ↑↓ ดูประวัติคำสั่ง</span>
+        <span style="font-size:0.6rem;">
+          <span style="color:#636363; margin-right:8px;">Enter รันทันที</span>
+          <span style="background:var(--green); color:#000; padding:1px 6px; font-size:0.55rem; font-family:var(--font-pixel);">ON</span>
+        </span>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:12px;">
+      <li><span class="icon">⌨</span><span>รองรับ <strong>IME</strong> ทุกประเภท — ไทย, จีน, ญี่ปุ่น</span></li>
+      <li><span class="icon">⏎</span><span><strong>Auto-Run toggle</strong>: เปิด = Enter รันคำสั่งทันที / ปิด = Enter ส่งข้อความเฉยๆ</span></li>
+      <li><span class="icon">📜</span><span>บันทึก<strong>ประวัติคำสั่ง</strong> 50 รายการล่าสุด (กด ↑↓ เรียกดู)</span></li>
+      <li><span class="icon">🔀</span><span>กด <kbd>Alt</kbd> + <kbd>Space</kbd> สลับ focus ระหว่าง input bar กับ terminal</span></li>
+    </ul>
+  </div>
+
+  <!-- Feature 5: Saved Profiles -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>💾 โปรไฟล์ที่บันทึกไว้ (Saved Profiles)</h3>
+    <p>บันทึกข้อมูล server เพื่อเชื่อมต่อซ้ำได้เร็วขึ้น ไม่ต้องกรอกใหม่ทุกครั้ง</p>
+
+    <div class="mockup-wrap" style="max-width:300px;">
+      <div style="background:#111113; padding:10px 14px;">
+        <div class="ms-heading">📁 โปรไฟล์ที่บันทึกไว้</div>
+        <div class="ms-profile">
+          <div>
+            <div class="ms-profile-name">root@production</div>
+            <div class="ms-profile-host">root@192.168.1.100:22</div>
+          </div>
+          <div style="display:flex; gap:6px; color:var(--green); font-size:0.7rem;">
+            <span title="ใช้งาน">▶</span>
+            <span title="ลบ" style="color:var(--red);">✕</span>
+          </div>
+        </div>
+        <div class="ms-profile">
+          <div>
+            <div class="ms-profile-name">ubuntu@dev</div>
+            <div class="ms-profile-host">ubuntu@10.0.0.10:22</div>
+          </div>
+          <div style="display:flex; gap:6px; color:var(--green); font-size:0.7rem;">
+            <span>▶</span>
+            <span style="color:var(--red);">✕</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:12px;">
+      <li><span class="icon">💾</span><span>กดปุ่ม <strong>บันทึก</strong> ในฟอร์มเพื่อเซฟโปรไฟล์ปัจจุบัน</span></li>
+      <li><span class="icon">▶</span><span>กดปุ่มลูกศร ▶ เพื่อ<strong>โหลดและเชื่อมต่อ</strong>ทันที</span></li>
+      <li><span class="icon">🖱</span><span>คลิกที่ชื่อโปรไฟล์เพื่อ<strong>โหลดข้อมูลลงฟอร์ม</strong> (ยังไม่ต่อ)</span></li>
+      <li><span class="icon">🗑</span><span>ข้อมูลบันทึกใน <strong>localStorage</strong> — ไม่มีส่งออกนอกเครื่อง</span></li>
+    </ul>
+  </div>
+
+  <!-- Feature 6: Themes -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>🎨 ธีม Terminal (6 ธีม)</h3>
+    <p>เปลี่ยนธีมได้จาก dropdown ที่ titlebar ระบบจะจำธีมที่เลือกไว้ใน localStorage</p>
+
+    <div class="theme-grid">
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#282a36;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#282a36; color:#f8f8f2;">
+          <span style="color:#50fa7b;">root@srv</span>:~$<br>
+          <span style="color:#8be9fd;">ls</span> <span style="color:#bd93f9;">-la</span>
+        </div>
+        <div class="name" style="background:#282a36; color:#bd93f9;">DRACULA ★</div>
+      </div>
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#1e1e1e;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#1e1e1e; color:#fff;">
+          <span style="color:#50fa7b;">root@srv</span>:~$<br>
+          <span style="color:#bd93f9;">ls</span> <span style="color:#8be9fd;">-la</span>
+        </div>
+        <div class="name" style="background:#1e1e1e; color:#bbb;">MACOS DARK</div>
+      </div>
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#272822;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#272822; color:#f8f8f2;">
+          <span style="color:#a6e22e;">root@srv</span>:~$<br>
+          <span style="color:#66d9ef;">ls</span> <span style="color:#ae81ff;">-la</span>
+        </div>
+        <div class="name" style="background:#272822; color:#f8f8f2;">MONOKAI</div>
+      </div>
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#080f0a;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#080f0a; color:#33ff33;">
+          <span style="color:#33ff33;">root@srv</span>:~$<br>
+          <span>ls</span> <span>-la</span>
+        </div>
+        <div class="name" style="background:#080f0a; color:#33ff33;">RETRO GREEN</div>
+      </div>
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#100a00;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#100a00; color:#ffb000;">
+          <span style="color:#ffb000;">root@srv</span>:~$<br>
+          <span>ls</span> <span>-la</span>
+        </div>
+        <div class="name" style="background:#100a00; color:#ffb000;">RETRO AMBER</div>
+      </div>
+      <div class="theme-swatch">
+        <div class="swatch-bar" style="background:#002b36;">
+          <div class="dot" style="background:#ff5555;"></div>
+          <div class="dot" style="background:#f1fa8c;"></div>
+          <div class="dot" style="background:#50fa7b;"></div>
+        </div>
+        <div class="swatch-body" style="background:#002b36; color:#839496;">
+          <span style="color:#859900;">root@srv</span>:~$<br>
+          <span style="color:#268bd2;">ls</span> <span style="color:#b58900;">-la</span>
+        </div>
+        <div class="name" style="background:#002b36; color:#93a1a1;">SOLARIZED</div>
+      </div>
+    </div>
+    <p style="margin-top:12px;"><strong>★ Dracula</strong> คือธีม default ที่แนะนำ</p>
+  </div>
+
+  <!-- Feature 7: Mascot -->
+  <div class="card" style="margin-bottom:24px;">
+    <h3>🎮 Pixel Art Mascot (ตัวละครหน้าจอ)</h3>
+    <p>มาสคอต 8-bit ที่ header แสดงสถานะการเชื่อมต่อและเคลื่อนไหวเมื่อมีข้อมูลผ่าน</p>
+
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:12px;">
+      <div style="text-align:center; background:#000; border:1px solid #3f3f46; padding:16px 8px;">
+        <div style="font-size:2rem; margin-bottom:8px;">🦖</div>
+        <div style="font-family:var(--font-pixel); font-size:0.5rem; color:var(--green);">DINO</div>
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:4px;">ไดโนเสาร์</div>
+      </div>
+      <div style="text-align:center; background:#000; border:1px solid #3f3f46; padding:16px 8px;">
+        <div style="font-size:2rem; margin-bottom:8px;">🐱</div>
+        <div style="font-family:var(--font-pixel); font-size:0.5rem; color:var(--cyan);">CYBER CAT</div>
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:4px;">แมวไซเบอร์</div>
+      </div>
+      <div style="text-align:center; background:#000; border:1px solid #3f3f46; padding:16px 8px;">
+        <div style="font-size:2rem; margin-bottom:8px;">👻</div>
+        <div style="font-family:var(--font-pixel); font-size:0.5rem; color:var(--pink);">PAC GHOST</div>
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:4px;">ผีเรโทร</div>
+      </div>
+      <div style="text-align:center; background:#000; border:1px solid #3f3f46; padding:16px 8px;">
+        <div style="font-size:2rem; margin-bottom:8px;">🤖</div>
+        <div style="font-family:var(--font-pixel); font-size:0.5rem; color:var(--purple);">TINY ROBOT</div>
+        <div style="font-size:0.65rem; color:var(--muted); margin-top:4px;">หุ่นยนต์จิ๋ว</div>
+      </div>
+    </div>
+
+    <ul class="feature-list" style="margin-top:16px;">
+      <li><span class="icon">🔴</span><span>สีแดง / หยุดนิ่ง = <strong>ยังไม่ได้เชื่อมต่อ</strong></span></li>
+      <li><span class="icon">🟡</span><span>กะพริบ = <strong>กำลังเชื่อมต่อ / reconnecting</strong></span></li>
+      <li><span class="icon">🟢</span><span>เขียว / วิ่ง = <strong>เชื่อมต่อแล้ว</strong> (animate เมื่อมีข้อมูล)</span></li>
+      <li><span class="icon">💾</span><span>บันทึกตัวละครที่เลือกไว้ใน localStorage</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Keyboard ════════════════════════════ -->
+<section class="section">
+  <div class="section-title">06 — Keyboard Shortcuts</div>
+
+  <div class="card">
+    <table class="kbd-table">
+      <thead>
+        <tr>
+          <th>Shortcut</th>
+          <th>การทำงาน</th>
+          <th>บริบท</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><kbd>Enter</kbd></td>
+          <td>ส่งคำสั่ง (ถ้า Auto-Run เปิดอยู่ จะรันทันที)</td>
+          <td>Thai input bar</td>
+        </tr>
+        <tr>
+          <td><kbd>↑</kbd> / <kbd>↓</kbd></td>
+          <td>เรียกดูประวัติคำสั่งก่อนหน้า / ถัดไป</td>
+          <td>Thai input bar</td>
+        </tr>
+        <tr>
+          <td><kbd>Alt</kbd> + <kbd>Space</kbd></td>
+          <td>สลับ focus ระหว่าง Thai input bar กับ xterm.js</td>
+          <td>ทุกที่</td>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd> + <kbd>C</kbd></td>
+          <td>หยุดคำสั่งปัจจุบัน (ส่งผ่าน xterm โดยตรง)</td>
+          <td>xterm terminal</td>
+        </tr>
+        <tr>
+          <td><kbd>Ctrl</kbd> + <kbd>L</kbd></td>
+          <td>Clear terminal (ในฝั่ง server)</td>
+          <td>xterm terminal</td>
+        </tr>
+        <tr>
+          <td>ปุ่ม 🗑 (titlebar)</td>
+          <td>Clear terminal ฝั่ง browser (ล้าง buffer xterm)</td>
+          <td>ทุกที่</td>
+        </tr>
+        <tr>
+          <td>ปุ่ม ▤ (titlebar)</td>
+          <td>ซ่อน / แสดง sidebar แผงด้านซ้าย</td>
+          <td>ทุกที่</td>
+        </tr>
+        <tr>
+          <td>ปุ่ม 📋 (titlebar)</td>
+          <td>Copy ข้อความที่เลือกใน terminal</td>
+          <td>xterm terminal</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Flow ═══════════════════════════════ -->
+<section class="section">
+  <div class="section-title">07 — Flow การใช้งานทั่วไป</div>
+
+  <div class="card">
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>เปิดเบราว์เซอร์ไปที่ http://localhost:3000</strong>
+          <p>หน้า UI จะโหลดพร้อม sidebar ทางซ้าย และ terminal ทางขวา</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>กรอก Host, Username, Port, Password</strong>
+          <p>หรือคลิกโปรไฟล์ที่บันทึกไว้เพื่อโหลดข้อมูลอัตโนมัติ</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>กด "เชื่อมต่อ SSH"</strong>
+          <p>จะเห็น overlay แสดงสถานะ "กำลังเชื่อมต่อ..." ตามด้วย "เชื่อมต่อเสร็จสมบูรณ์"</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Sidebar ซ่อนตัวอัตโนมัติ — terminal ขยายเต็มหน้าจอ</strong>
+          <p>สามารถกด ▤ ที่ titlebar เพื่อเรียก sidebar กลับมาได้ตลอดเวลา</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ใช้งาน Terminal</strong>
+          <p>พิมพ์คำสั่งใน xterm หรือในช่อง Thai input bar ด้านล่าง กด <kbd>Alt</kbd>+<kbd>Space</kbd> สลับได้</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>เปิด Tab ใหม่ (ถ้าต้องการ multi-session)</strong>
+          <p>กด + ที่ tab bar แล้วกรอกข้อมูล server ใหม่ได้เลย</p>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>ตัดการเชื่อมต่อ</strong>
+          <p>กดปุ่ม ⏻ (Disconnect) ที่ titlebar หรือปุ่มกลม 🔴 มุมซ้ายของ terminal window</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Security ════════════════════════════ -->
+<section class="section">
+  <div class="section-title">08 — ความปลอดภัย</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>✅ สิ่งที่ระบบทำ</h3>
+      <ul class="feature-list">
+        <li><span class="icon">🔐</span><span>ส่ง credentials ผ่าน <strong>WebSocket เดียวกับ HTTP server</strong> — ไม่ expose port SSH ออกนอก</span></li>
+        <li><span class="icon">💾</span><span>Password บันทึกใน <strong>localStorage ของ browser เท่านั้น</strong></span></li>
+        <li><span class="icon">🏠</span><span>ออกแบบมาสำหรับ <strong>localhost หรือ private network</strong></span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>⚠️ ข้อควรระวัง</h3>
+      <ul class="feature-list">
+        <li><span class="icon">🌐</span><span><strong>อย่า expose port 3000 ออก internet</strong> โดยไม่มี authentication</span></li>
+        <li><span class="icon">🔒</span><span>แนะนำให้ใช้ <strong>HTTPS + Nginx reverse proxy</strong> ถ้า deploy บน server</span></li>
+        <li><span class="icon">🗝</span><span>Password ใน localStorage <strong>ไม่ได้เข้ารหัส</strong> — ระวังบนเครื่องสาธารณะ</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: File Structure ══════════════════════ -->
+<section class="section">
+  <div class="section-title">09 — โครงสร้างไฟล์</div>
+
+  <div class="card">
+    <pre><span class="g">ssh_terminal/</span>
+├── <span class="c">server.js</span>              <span class="d"># Node.js backend — WebSocket + SSH bridge</span>
+├── <span class="c">package.json</span>           <span class="d"># dependencies: express, ws, ssh2</span>
+├── <span class="c">package-lock.json</span>
+└── <span class="c">public/</span>                <span class="d"># Static files served by Express</span>
+    ├── <span class="y">index.html</span>         <span class="d"># HTML shell — layout + xterm CDN links</span>
+    ├── <span class="y">style.css</span>          <span class="d"># Retro 16-bit CSS — pixel art, themes</span>
+    ├── <span class="y">app.js</span>             <span class="d"># Frontend logic — tabs, SSH, Thai input, mascot</span>
+    ├── <span class="y">manifest.json</span>      <span class="d"># PWA manifest</span>
+    ├── <span class="y">service-worker.js</span>  <span class="d"># PWA service worker (offline cache)</span>
+    └── <span class="y">assets/</span>
+        └── <span class="pk">logo.png</span>       <span class="d"># App icon (PWA + header)</span></pre>
+  </div>
+</section>
+
+<!-- ═══════════════════════ SECTION: Troubleshooting ════════════════════ -->
+<section class="section">
+  <div class="section-title">10 — แก้ไขปัญหาที่พบบ่อย</div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ เชื่อมต่อไม่ได้ / "ข้อผิดพลาด SSH"</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔍</span><span>ตรวจสอบ IP, port, username, password ว่าถูกต้อง</span></li>
+      <li><span class="icon">🔥</span><span>ตรวจสอบ firewall บน target server ว่าเปิด port SSH</span></li>
+      <li><span class="icon">🖥</span><span>ตรวจสอบว่า <code>sshd</code> รันอยู่บน server: <code>systemctl status ssh</code></span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ ภาษาไทยไม่แสดงใน Terminal</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔤</span><span>ตั้งค่า locale บน server: <code>export LANG=en_US.UTF-8</code></span></li>
+      <li><span class="icon">📝</span><span>ใช้ช่อง <strong>Thai input bar</strong> ด้านล่างแทนการพิมพ์ใน xterm โดยตรง</span></li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;">
+    <h3>❌ Terminal ขนาดผิด / ข้อความเยื้อง</h3>
+    <ul class="feature-list">
+      <li><span class="icon">↔</span><span>กดปุ่ม ▤ (toggle sidebar) เพื่อ trigger resize</span></li>
+      <li><span class="icon">🔄</span><span>Refresh หน้าเว็บ — xterm-addon-fit จะคำนวณขนาดใหม่</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>❌ PWA ไม่ install ได้</h3>
+    <ul class="feature-list">
+      <li><span class="icon">🔒</span><span>PWA ต้องการ HTTPS หรือ localhost เท่านั้น</span></li>
+      <li><span class="icon">🌐</span><span>ใช้ Chrome หรือ Edge เพื่อประสบการณ์ PWA ที่ดีที่สุด</span></li>
+    </ul>
+  </div>
+</section>
+
+</div><!-- end wrapper -->
+
+<div class="footer">
+  <p>MONTIEN TECH TERMINAL &nbsp;·&nbsp; <span class="version">v1.0.0</span> &nbsp;·&nbsp; BUILT WITH NODE.JS + XTERM.JS</p>
+  <p style="margin-top:6px;">DOCUMENTATION GENERATED 2026-06-20</p>
+</div>
+
+</body>
+</html>
