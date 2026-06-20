@@ -1,323 +1,276 @@
 // Theme Definitions
 const themes = {
   'macos-dark': {
-    background: '#1e1e1e',
-    foreground: '#ffffff',
-    cursor: '#ffffff',
-    black: '#000000',
-    red: '#ff5555',
-    green: '#50fa7b',
-    yellow: '#f1fa8c',
-    blue: '#bd93f9',
-    magenta: '#ff79c6',
-    cyan: '#8be9fd',
-    white: '#bbbbbb'
+    background: '#1e1e1e', foreground: '#ffffff', cursor: '#ffffff',
+    black: '#000000', red: '#ff5555', green: '#50fa7b', yellow: '#f1fa8c',
+    blue: '#bd93f9', magenta: '#ff79c6', cyan: '#8be9fd', white: '#bbbbbb'
   },
   'dracula': {
-    background: '#282a36',
-    foreground: '#f8f8f2',
-    cursor: '#f8f8f0',
-    black: '#21222c',
-    red: '#ff5555',
-    green: '#50fa7b',
-    yellow: '#f1fa8c',
-    blue: '#bd93f9',
-    magenta: '#ff79c6',
-    cyan: '#8be9fd',
-    white: '#ffffff'
+    background: '#282a36', foreground: '#f8f8f2', cursor: '#f8f8f0',
+    black: '#21222c', red: '#ff5555', green: '#50fa7b', yellow: '#f1fa8c',
+    blue: '#bd93f9', magenta: '#ff79c6', cyan: '#8be9fd', white: '#ffffff'
   },
   'monokai': {
-    background: '#272822',
-    foreground: '#f8f8f2',
-    cursor: '#f8f8f0',
-    black: '#272822',
-    red: '#f92672',
-    green: '#a6e22e',
-    yellow: '#f4bf75',
-    blue: '#66d9ef',
-    magenta: '#ae81ff',
-    cyan: '#a1efe4',
-    white: '#f8f8f2'
+    background: '#272822', foreground: '#f8f8f2', cursor: '#f8f8f0',
+    black: '#272822', red: '#f92672', green: '#a6e22e', yellow: '#f4bf75',
+    blue: '#66d9ef', magenta: '#ae81ff', cyan: '#a1efe4', white: '#f8f8f2'
   },
   'solarized-dark': {
-    background: '#002b36',
-    foreground: '#839496',
-    cursor: '#93a1a1',
-    black: '#073642',
-    red: '#dc322f',
-    green: '#859900',
-    yellow: '#b58900',
-    blue: '#268bd2',
-    magenta: '#d33682',
-    cyan: '#2aa198',
-    white: '#eee8d5'
+    background: '#002b36', foreground: '#839496', cursor: '#93a1a1',
+    black: '#073642', red: '#dc322f', green: '#859900', yellow: '#b58900',
+    blue: '#268bd2', magenta: '#d33682', cyan: '#2aa198', white: '#eee8d5'
   },
   'retro-green': {
-    background: '#080f0a',
-    foreground: '#33ff33',
-    cursor: '#33ff33',
-    black: '#000000',
-    red: '#ff0000',
-    green: '#33ff33',
-    yellow: '#ffff00',
-    blue: '#0000ff',
-    magenta: '#ff00ff',
-    cyan: '#00ffff',
-    white: '#ffffff'
+    background: '#080f0a', foreground: '#33ff33', cursor: '#33ff33',
+    black: '#000000', red: '#ff0000', green: '#33ff33', yellow: '#ffff00',
+    blue: '#0000ff', magenta: '#ff00ff', cyan: '#00ffff', white: '#ffffff'
   },
   'retro-amber': {
-    background: '#100a00',
-    foreground: '#ffb000',
-    cursor: '#ffb000',
-    black: '#000000',
-    red: '#ff0000',
-    green: '#00ff00',
-    yellow: '#ffb000',
-    blue: '#0000ff',
-    magenta: '#ff00ff',
-    cyan: '#00ffff',
-    white: '#ffffff'
+    background: '#100a00', foreground: '#ffb000', cursor: '#ffb000',
+    black: '#000000', red: '#ff0000', green: '#00ff00', yellow: '#ffb000',
+    blue: '#0000ff', magenta: '#ff00ff', cyan: '#00ffff', white: '#ffffff'
   }
 };
 
-// Global variables
-let socket = null;
-let term = null;
-let fitAddon = null;
-let commandHistory = [];
-let historyIndex = -1;
+// ─── Global State ────────────────────────────────────────────────────────────
+const sessions = {};
+let activeTabId = null;
+let tabCounter = 0;
 let currentProfileId = null;
-let autoRunOnEnter = localStorage.getItem('ssh_auto_run') !== 'false'; // default true
+let autoRunOnEnter = localStorage.getItem('ssh_auto_run') !== 'false';
+let commandHistory = [];
 
-// DOM Elements
-const connectionForm = document.getElementById('connection-form');
-const hostInput = document.getElementById('ssh-host');
-const usernameInput = document.getElementById('ssh-username');
-const portInput = document.getElementById('ssh-port');
-const passwordInput = document.getElementById('ssh-password');
+// ─── DOM References ───────────────────────────────────────────────────────────
+const connectionForm    = document.getElementById('connection-form');
+const hostInput         = document.getElementById('ssh-host');
+const usernameInput     = document.getElementById('ssh-username');
+const portInput         = document.getElementById('ssh-port');
+const passwordInput     = document.getElementById('ssh-password');
 const togglePasswordBtn = document.getElementById('toggle-password');
-const connectBtn = document.getElementById('btn-connect');
-const saveProfileBtn = document.getElementById('btn-save-profile');
-const profilesList = document.getElementById('profiles-list');
+const connectBtn        = document.getElementById('btn-connect');
+const saveProfileBtn    = document.getElementById('btn-save-profile');
+const profilesList      = document.getElementById('profiles-list');
 
-const statusDot = document.getElementById('connection-status-dot');
-const statusText = document.getElementById('connection-status-text');
+const statusDot         = document.getElementById('connection-status-dot');
+const statusText        = document.getElementById('connection-status-text');
 
 const terminalContainer = document.getElementById('terminal-container');
-const terminalOverlay = document.getElementById('terminal-overlay');
-const overlayMessage = document.getElementById('overlay-message');
-const themeSelect = document.getElementById('terminal-theme');
-const toggleSidebarBtn = document.getElementById('btn-toggle-sidebar');
-const clearTerminalBtn = document.getElementById('btn-clear-terminal');
-const disconnectBtn = document.getElementById('btn-disconnect');
-const macCloseBtn = document.getElementById('mac-close-btn');
-const windowTitle = document.getElementById('terminal-window-title');
-const macbookWindow = document.querySelector('.macbook-window');
-const appContainer = document.querySelector('.app-container');
+const terminalOverlay   = document.getElementById('terminal-overlay');
+const overlayMessage    = document.getElementById('overlay-message');
+const themeSelect       = document.getElementById('terminal-theme');
+const toggleSidebarBtn  = document.getElementById('btn-toggle-sidebar');
+const clearTerminalBtn  = document.getElementById('btn-clear-terminal');
+const disconnectBtn     = document.getElementById('btn-disconnect');
+const macCloseBtn       = document.getElementById('mac-close-btn');
+const windowTitle       = document.getElementById('terminal-window-title');
+const macbookWindow     = document.querySelector('.macbook-window');
+const appContainer      = document.querySelector('.app-container');
+const tabBar            = document.getElementById('tab-bar');
+const btnNewTab         = document.getElementById('btn-new-tab');
+const btnCopyOutput     = document.getElementById('btn-copy-output');
 
-const thaiCommandInput = document.getElementById('thai-command-input');
-const sendCommandBtn = document.getElementById('btn-send-command');
-const autoRunToggle = document.getElementById('auto-run-toggle');
+const thaiCommandInput  = document.getElementById('thai-command-input');
+const sendCommandBtn    = document.getElementById('btn-send-command');
+const autoRunToggle     = document.getElementById('auto-run-toggle');
 
-// Initial Setup
+// ─── DOMContentLoaded ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize Lucide icons
   lucide.createIcons();
-  
-  // Set default theme from selector
-  const defaultTheme = themeSelect.value;
-  applyThemeStyles(defaultTheme);
-  
-  // Toggle Sidebar
-  if (toggleSidebarBtn) {
-    toggleSidebarBtn.addEventListener('click', toggleSidebar);
-  }
+  applyThemeStyles(themeSelect.value);
 
-  // Initialize Terminal
-  initTerminal(defaultTheme);
-  
-  // Load Saved Profiles
+  if (toggleSidebarBtn) toggleSidebarBtn.addEventListener('click', toggleSidebar);
+
   loadProfiles();
 
-  // Load last used session if available
   const lastProfile = localStorage.getItem('ssh_last_profile');
   if (lastProfile) {
     try {
-      const data = JSON.parse(lastProfile);
-      hostInput.value = data.host || '';
-      usernameInput.value = data.username || '';
-      portInput.value = data.port || '22';
-    } catch (e) {
-      console.error(e);
-    }
+      const d = JSON.parse(lastProfile);
+      hostInput.value    = d.host     || '';
+      usernameInput.value = d.username || '';
+      portInput.value    = d.port     || '22';
+    } catch (e) { /* ignore */ }
   }
 
-  // Load history from localStorage
   const savedHistory = localStorage.getItem('ssh_command_history');
   if (savedHistory) {
-    try {
-      commandHistory = JSON.parse(savedHistory);
-    } catch (e) {
-      console.error(e);
-    }
+    try { commandHistory = JSON.parse(savedHistory); } catch (e) { /* ignore */ }
   }
 
-  // Load auto-run toggle state
   autoRunToggle.checked = autoRunOnEnter;
   autoRunToggle.addEventListener('change', () => {
     autoRunOnEnter = autoRunToggle.checked;
     localStorage.setItem('ssh_auto_run', autoRunOnEnter ? 'true' : 'false');
   });
 
-  // Register Service Worker for PWA installation support
+  createTab();
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js')
-      .then(reg => console.log('Service Worker registered successfully:', reg.scope))
-      .catch(err => console.error('Service Worker registration failed:', err));
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.error('SW failed:', err));
   }
 });
 
-// Password visibility toggle
-togglePasswordBtn.addEventListener('click', () => {
-  const isPassword = passwordInput.type === 'password';
-  passwordInput.type = isPassword ? 'text' : 'password';
-  togglePasswordBtn.innerHTML = isPassword ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
-  lucide.createIcons();
-});
+// ─── Tab Management ───────────────────────────────────────────────────────────
+function createTab() {
+  tabCounter++;
+  const tabId = `tab_${tabCounter}`;
 
-// Initialize Terminal using xterm.js
-function initTerminal(themeKey) {
-  // Setup standard Terminal Options
-  term = new Terminal({
+  // Create terminal DOM element
+  const termEl = document.createElement('div');
+  termEl.className = 'terminal-instance';
+  termEl.style.display = 'block';
+  terminalContainer.appendChild(termEl);
+
+  // Create xterm instance
+  const term = new Terminal({
     cursorBlink: true,
     fontFamily: 'JetBrains Mono, Courier New, monospace',
     fontSize: 14,
     lineHeight: 1.2,
-    theme: themes[themeKey],
+    theme: themes[themeSelect.value],
     allowProposedApi: true
   });
 
-  // Fit Addon
-  fitAddon = new FitAddon.FitAddon();
+  const fitAddon = new FitAddon.FitAddon();
   term.loadAddon(fitAddon);
-
-  // Render terminal
-  term.open(terminalContainer);
+  term.open(termEl);
   fitAddon.fit();
 
-  // Handle Resize Event
-  window.addEventListener('resize', () => {
-    if (term) {
-      fitAddon.fit();
-      sendResize();
-    }
-  });
-
-  // Send keystrokes directly typed in the terminal
+  // Forward keystrokes to active SSH session
   term.onData((data) => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({
-        type: 'input',
-        data: data
-      }));
+    const s = sessions[tabId];
+    if (s && s.socket && s.socket.readyState === WebSocket.OPEN) {
+      s.socket.send(JSON.stringify({ type: 'input', data }));
     }
   });
 
-  // Print initial message
+  // Store session
+  sessions[tabId] = {
+    id: tabId,
+    socket: null,
+    term,
+    fitAddon,
+    termEl,
+    status: 'disconnected',
+    profile: null,
+    reconnectAttempts: 0,
+    reconnectTimer: null,
+    intentionalDisconnect: false,
+    historyIndex: -1
+  };
+
+  // Create tab UI button
+  const tabEl = document.createElement('div');
+  tabEl.className = 'tab';
+  tabEl.dataset.tabId = tabId;
+  tabEl.innerHTML = `<span class="tab-title">Tab ${tabCounter}</span><button class="tab-close" title="ปิด Tab">✕</button>`;
+
+  tabEl.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('tab-close')) switchToTab(tabId);
+  });
+  tabEl.querySelector('.tab-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeTab(tabId);
+  });
+
+  tabBar.insertBefore(tabEl, btnNewTab);
+
   term.writeln('\x1b[1;36mยินดีต้อนรับสู่ SSH Terminal Bridge!\x1b[0m');
   term.writeln('กรอกรายละเอียดเซิร์ฟเวอร์ด้านซ้ายแล้วกดปุ่ม \x1b[1;32m"เชื่อมต่อ SSH"\x1b[0m เพื่อเริ่มต้นใช้งาน...');
+
+  switchToTab(tabId);
+  return tabId;
 }
 
-// Apply visual theme to both XTerm and macOS window container
-function applyThemeStyles(themeKey) {
-  const theme = themes[themeKey];
-  if (!theme) return;
-  
-  // Set Terminal Background/Foreground in Xterm
-  if (term) {
-    term.options.theme = theme;
+function switchToTab(tabId) {
+  // Hide all terminal instances
+  Object.values(sessions).forEach(s => { s.termEl.style.display = 'none'; });
+
+  // Update tab UI
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab-id="${tabId}"]`)?.classList.add('active');
+
+  const session = sessions[tabId];
+  if (!session) return;
+
+  session.termEl.style.display = 'block';
+  activeTabId = tabId;
+
+  // Fit and focus after layout paint
+  requestAnimationFrame(() => {
+    session.fitAddon.fit();
+    session.term.focus();
+  });
+
+  // Sync UI state
+  syncUIToSession(session);
+}
+
+function closeTab(tabId) {
+  const session = sessions[tabId];
+  if (!session) return;
+
+  const tabIds = Object.keys(sessions);
+  if (tabIds.length === 1) {
+    // Keep at least one tab; just disconnect
+    if (session.status === 'connected' || session.status === 'reconnecting') {
+      doDisconnect(tabId, true);
+    }
+    return;
   }
-  
-  // Set container styles
-  macbookWindow.style.backgroundColor = theme.background;
-  
-  // Custom tweak: for light backgrounds, adjust color themes
-  if (themeKey.includes('retro')) {
-    macbookWindow.style.borderColor = theme.foreground;
+
+  session.intentionalDisconnect = true;
+  if (session.reconnectTimer) clearTimeout(session.reconnectTimer);
+  if (session.socket) session.socket.close();
+
+  session.term.dispose();
+  session.termEl.remove();
+  document.querySelector(`.tab[data-tab-id="${tabId}"]`)?.remove();
+  delete sessions[tabId];
+
+  if (activeTabId === tabId) {
+    const remaining = Object.keys(sessions);
+    switchToTab(remaining[remaining.length - 1]);
+  }
+}
+
+function updateTabTitle(tabId, title) {
+  const el = document.querySelector(`.tab[data-tab-id="${tabId}"] .tab-title`);
+  if (el) el.textContent = title;
+}
+
+function syncUIToSession(session) {
+  if (session.status === 'connected' && session.profile) {
+    const { host, username, port } = session.profile;
+    setConnectionStatus('connected', `เชื่อมต่อแล้ว: ${username}@${host}`);
+    windowTitle.textContent = `SSH Terminal - ${username}@${host}:${port}`;
+    enableCommandBar(true);
+    hideOverlay();
+  } else if (session.status === 'connecting' || session.status === 'reconnecting') {
+    setConnectionStatus('connecting', session.status === 'reconnecting' ? 'กำลัง reconnect...' : 'กำลังเชื่อมต่อ...');
+    enableCommandBar(false);
+    showOverlay('กำลังเชื่อมต่อ...');
   } else {
-    macbookWindow.style.borderColor = '#3c3d40';
+    setConnectionStatus('disconnected', 'ไม่ได้เชื่อมต่อ');
+    windowTitle.textContent = 'SSH Terminal (ยังไม่ได้เชื่อมต่อ)';
+    enableCommandBar(false);
+    hideOverlay();
   }
 }
 
-// Theme Change Handler
-themeSelect.addEventListener('change', (e) => {
-  applyThemeStyles(e.target.value);
-});
+// ─── SSH Connection ───────────────────────────────────────────────────────────
+function connectSSH(tabId) {
+  const targetId = tabId || activeTabId;
+  const session = sessions[targetId];
+  if (!session) return;
 
-// Clear Terminal Handler
-clearTerminalBtn.addEventListener('click', () => {
-  if (term) {
-    term.clear();
-    term.focus();
-  }
-});
+  if (session.socket) doDisconnect(targetId, true);
 
-// Disconnect Handlers
-disconnectBtn.addEventListener('click', disconnectSSH);
-macCloseBtn.addEventListener('click', () => {
-  if (socket) {
-    if (confirm('คุณต้องการตัดการเชื่อมต่อ SSH หรือไม่?')) {
-      disconnectSSH();
-    }
-  }
-});
-
-// Send resize details to backend
-function sendResize() {
-  if (socket && socket.readyState === WebSocket.OPEN && term) {
-    socket.send(JSON.stringify({
-      type: 'resize',
-      cols: term.cols,
-      rows: term.rows
-    }));
-  }
-}
-
-// Toggle Sidebar display
-function toggleSidebar() {
-  if (!appContainer) return;
-  appContainer.classList.toggle('sidebar-hidden');
-  
-  // Fit immediately
-  if (term && fitAddon) {
-    fitAddon.fit();
-    sendResize();
-  }
-  
-  // Fit again after CSS transition completes
-  setTimeout(() => {
-    if (term && fitAddon) {
-      fitAddon.fit();
-      sendResize();
-    }
-  }, 300);
-}
-
-// Connect form submit handler
-connectionForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  connectSSH();
-});
-
-// Connect to SSH via backend WebSocket
-function connectSSH() {
-  if (socket) {
-    disconnectSSH();
-  }
-
-  const host = hostInput.value.trim();
+  const host     = hostInput.value.trim();
   const username = usernameInput.value.trim();
-  const port = parseInt(portInput.value) || 22;
+  const port     = parseInt(portInput.value) || 22;
   const password = passwordInput.value;
 
   if (!host || !username || !password) {
@@ -325,110 +278,141 @@ function connectSSH() {
     return;
   }
 
-  // Update status UI to connecting
-  setConnectionStatus('connecting', 'กำลังเชื่อมต่อ...');
-  showOverlay('กำลังเริ่มการเชื่อมต่อกับเซิร์ฟเวอร์...');
+  session.profile = { host, username, port, password };
+  session.reconnectAttempts = 0;
+  session.intentionalDisconnect = false;
 
-  // Save last used parameters (except password)
+  doConnect(targetId);
+}
+
+function doConnect(tabId) {
+  const session = sessions[tabId];
+  if (!session || !session.profile) return;
+
+  const { host, username, port, password } = session.profile;
+  const isReconnect = session.reconnectAttempts > 0;
+
+  session.status = isReconnect ? 'reconnecting' : 'connecting';
+
+  if (tabId === activeTabId) {
+    const msg = isReconnect
+      ? `กำลัง reconnect ครั้งที่ ${session.reconnectAttempts}/5...`
+      : 'กำลังเริ่มการเชื่อมต่อกับเซิร์ฟเวอร์...';
+    setConnectionStatus('connecting', isReconnect ? `Reconnecting ${session.reconnectAttempts}/5...` : 'กำลังเชื่อมต่อ...');
+    showOverlay(msg);
+  }
+
   localStorage.setItem('ssh_last_profile', JSON.stringify({ host, username, port }));
 
-  // Create WebSocket
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}`;
-  
-  socket = new WebSocket(wsUrl);
+  const ws = new WebSocket(`${protocol}//${window.location.host}`);
+  session.socket = ws;
 
-  socket.onopen = () => {
-    // Send connection details
-    socket.send(JSON.stringify({
-      type: 'connect',
-      host,
-      port,
-      username,
-      password,
-      cols: term.cols,
-      rows: term.rows
+  ws.onopen = () => {
+    ws.send(JSON.stringify({
+      type: 'connect', host, port, username, password,
+      cols: session.term.cols, rows: session.term.rows
     }));
   };
 
-  socket.onmessage = (event) => {
+  ws.onmessage = (event) => {
     try {
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'status') {
-        updateOverlayStatus(msg.message, msg.level);
+        if (tabId === activeTabId) updateOverlayStatus(msg.message);
+
         if (msg.level === 'success') {
-          setConnectionStatus('connected', `เชื่อมต่อแล้ว: ${username}@${host}`);
-          windowTitle.textContent = `SSH Terminal - ${username}@${host}:${port}`;
-          hideOverlay();
-          enableCommandBar(true);
-          term.clear();
-          term.focus();
-          
-          // Auto collapse sidebar when connected
-          if (appContainer) {
-            appContainer.classList.add('sidebar-hidden');
-            setTimeout(() => {
-              if (term && fitAddon) {
-                fitAddon.fit();
-                sendResize();
-              }
-            }, 300);
+          session.status = 'connected';
+          session.reconnectAttempts = 0;
+          updateTabTitle(tabId, `${username}@${host}`);
+
+          if (tabId === activeTabId) {
+            setConnectionStatus('connected', `เชื่อมต่อแล้ว: ${username}@${host}`);
+            windowTitle.textContent = `SSH Terminal - ${username}@${host}:${port}`;
+            hideOverlay();
+            enableCommandBar(true);
+            session.term.clear();
+            session.term.focus();
+
+            if (appContainer) {
+              appContainer.classList.add('sidebar-hidden');
+              setTimeout(() => { session.fitAddon.fit(); sendResize(tabId); }, 300);
+            }
           }
-        } else if (msg.level === 'warning') {
-          // Warning state
         }
       } else if (msg.type === 'data') {
-        term.write(msg.data);
+        session.term.write(msg.data);
       } else if (msg.type === 'error') {
-        alert(msg.message);
-        disconnectSSH();
+        if (tabId === activeTabId) alert(msg.message);
+        doDisconnect(tabId, true);
       }
     } catch (e) {
       console.error(e);
     }
   };
 
-  socket.onclose = (event) => {
-    disconnectSSH();
-    term.writeln('\r\n\x1b[1;31mการเชื่อมต่อถูกปิดลง\x1b[0m');
-  };
+  ws.onclose = () => {
+    session.socket = null;
 
-  socket.onerror = (error) => {
-    console.error('WebSocket Error:', error);
-    alert('เกิดข้อผิดพลาดในการเชื่อมต่อ WebSocket');
-    disconnectSSH();
-  };
-}
+    if (!session.intentionalDisconnect && session.reconnectAttempts < 5) {
+      session.reconnectAttempts++;
+      const delay = Math.min(2000 * Math.pow(2, session.reconnectAttempts - 1), 30000);
+      const delaySec = (delay / 1000).toFixed(0);
 
-function disconnectSSH() {
-  if (socket) {
-    socket.close();
-    socket = null;
-  }
-  
-  setConnectionStatus('disconnected', 'ไม่ได้เชื่อมต่อ');
-  windowTitle.textContent = 'SSH Terminal (ยังไม่ได้เชื่อมต่อ)';
-  hideOverlay();
-  enableCommandBar(false);
-  
-  // Auto restore sidebar on disconnect
-  if (appContainer) {
-    appContainer.classList.remove('sidebar-hidden');
-    setTimeout(() => {
-      if (term && fitAddon) {
-        fitAddon.fit();
+      session.term.writeln(`\r\n\x1b[1;33m⚡ การเชื่อมต่อขาดหาย — reconnect ครั้งที่ ${session.reconnectAttempts}/5 ใน ${delaySec}s...\x1b[0m`);
+      updateTabTitle(tabId, `[⟳] ${username}@${host}`);
+
+      if (tabId === activeTabId) {
+        setConnectionStatus('connecting', `Reconnecting ${session.reconnectAttempts}/5...`);
+        showOverlay(`การเชื่อมต่อขาดหาย กำลัง reconnect ครั้งที่ ${session.reconnectAttempts}/5 ใน ${delaySec}s...`);
       }
-    }, 300);
+
+      session.reconnectTimer = setTimeout(() => doConnect(tabId), delay);
+    } else {
+      if (!session.intentionalDisconnect) {
+        session.term.writeln('\r\n\x1b[1;31m✗ Reconnect ไม่สำเร็จ — กรุณาเชื่อมต่อใหม่\x1b[0m');
+      }
+      doDisconnect(tabId, false);
+    }
+  };
+
+  ws.onerror = (err) => console.error('WebSocket error:', err);
+}
+
+function doDisconnect(tabId, intentional) {
+  const session = sessions[tabId];
+  if (!session) return;
+
+  session.intentionalDisconnect = true;
+  if (session.reconnectTimer) { clearTimeout(session.reconnectTimer); session.reconnectTimer = null; }
+  if (session.socket) { session.socket.close(); session.socket = null; }
+
+  session.status = 'disconnected';
+  const num = tabId.split('_')[1];
+  updateTabTitle(tabId, `Tab ${num}`);
+
+  if (intentional) {
+    session.term.writeln('\r\n\x1b[1;31mตัดการเชื่อมต่อแล้ว\x1b[0m');
+  }
+
+  if (tabId === activeTabId) {
+    setConnectionStatus('disconnected', 'ไม่ได้เชื่อมต่อ');
+    windowTitle.textContent = 'SSH Terminal (ยังไม่ได้เชื่อมต่อ)';
+    hideOverlay();
+    enableCommandBar(false);
+
+    if (appContainer) {
+      appContainer.classList.remove('sidebar-hidden');
+      setTimeout(() => { session.fitAddon.fit(); }, 300);
+    }
   }
 }
 
-// Update connection status label
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
 function setConnectionStatus(state, text) {
-  statusDot.className = 'status-indicator';
-  statusDot.classList.add(state);
+  statusDot.className = `status-indicator ${state}`;
   statusText.textContent = text;
-
   if (state === 'connected') {
     connectBtn.disabled = true;
     disconnectBtn.classList.remove('hidden');
@@ -438,22 +422,18 @@ function setConnectionStatus(state, text) {
   }
 }
 
-// Control Command Bar state
 function enableCommandBar(enabled) {
   thaiCommandInput.disabled = !enabled;
   sendCommandBtn.disabled = !enabled;
-  if (enabled) {
-    thaiCommandInput.focus();
-  }
+  if (enabled) thaiCommandInput.focus();
 }
 
-// Overlay helpers
 function showOverlay(message) {
   overlayMessage.textContent = message;
   terminalOverlay.classList.remove('hidden');
 }
 
-function updateOverlayStatus(message, level) {
+function updateOverlayStatus(message) {
   overlayMessage.textContent = message;
 }
 
@@ -461,55 +441,123 @@ function hideOverlay() {
   terminalOverlay.classList.add('hidden');
 }
 
-// Profile Management (LocalStorage)
-saveProfileBtn.addEventListener('click', () => {
-  const host = hostInput.value.trim();
-  const username = usernameInput.value.trim();
-  const port = parseInt(portInput.value) || 22;
-  const password = passwordInput.value;
+function sendResize(tabId = activeTabId) {
+  const s = sessions[tabId];
+  if (s && s.socket && s.socket.readyState === WebSocket.OPEN) {
+    s.socket.send(JSON.stringify({ type: 'resize', cols: s.term.cols, rows: s.term.rows }));
+  }
+}
 
-  if (!host || !username) {
-    alert('กรุณากรอก Host และ Username ก่อนเซฟ');
+function toggleSidebar() {
+  if (!appContainer) return;
+  appContainer.classList.toggle('sidebar-hidden');
+  setTimeout(() => {
+    const s = sessions[activeTabId];
+    if (s) { s.fitAddon.fit(); sendResize(); }
+  }, 300);
+}
+
+function applyThemeStyles(themeKey) {
+  const theme = themes[themeKey];
+  if (!theme) return;
+  Object.values(sessions).forEach(s => { s.term.options.theme = theme; });
+  macbookWindow.style.backgroundColor = theme.background;
+  macbookWindow.style.borderColor = themeKey.includes('retro') ? theme.foreground : '#3c3d40';
+}
+
+// ─── Copy Output ──────────────────────────────────────────────────────────────
+function copyTerminalOutput() {
+  const session = sessions[activeTabId];
+  if (!session) return;
+
+  const selected = session.term.getSelection();
+  const textToCopy = selected || '';
+
+  if (!textToCopy) {
+    btnCopyOutput.title = 'เลือกข้อความก่อน!';
+    btnCopyOutput.classList.add('copy-empty');
+    setTimeout(() => { btnCopyOutput.classList.remove('copy-empty'); btnCopyOutput.title = 'คัดลอกข้อความที่เลือก'; }, 1500);
     return;
   }
 
-  const profiles = getSavedProfiles();
-  const id = currentProfileId || 'profile_' + Date.now();
-  
-  // We can choose to save password or not. For maximum developer convenience,
-  // we save the password too, encrypted in localStorage (simple obfuscation or plain text since it is user's local machine).
-  const newProfile = {
-    id,
-    name: `${username}@${host}`,
-    host,
-    username,
-    port,
-    password: password // Saved in client-side localStorage only
-  };
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    btnCopyOutput.classList.add('copied');
+    setTimeout(() => btnCopyOutput.classList.remove('copied'), 1500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = textToCopy;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btnCopyOutput.classList.add('copied');
+    setTimeout(() => btnCopyOutput.classList.remove('copied'), 1500);
+  });
+}
 
-  profiles[id] = newProfile;
+// ─── Event Listeners ──────────────────────────────────────────────────────────
+togglePasswordBtn.addEventListener('click', () => {
+  const isPassword = passwordInput.type === 'password';
+  passwordInput.type = isPassword ? 'text' : 'password';
+  togglePasswordBtn.innerHTML = isPassword ? '<i data-lucide="eye-off"></i>' : '<i data-lucide="eye"></i>';
+  lucide.createIcons();
+});
+
+connectionForm.addEventListener('submit', (e) => { e.preventDefault(); connectSSH(); });
+
+disconnectBtn.addEventListener('click', () => doDisconnect(activeTabId, true));
+
+macCloseBtn.addEventListener('click', () => {
+  const s = sessions[activeTabId];
+  if (s && (s.status === 'connected' || s.status === 'reconnecting')) {
+    if (confirm('คุณต้องการตัดการเชื่อมต่อ SSH หรือไม่?')) doDisconnect(activeTabId, true);
+  }
+});
+
+themeSelect.addEventListener('change', (e) => applyThemeStyles(e.target.value));
+
+clearTerminalBtn.addEventListener('click', () => {
+  const s = sessions[activeTabId];
+  if (s) { s.term.clear(); s.term.focus(); }
+});
+
+btnCopyOutput.addEventListener('click', copyTerminalOutput);
+
+btnNewTab.addEventListener('click', () => createTab());
+
+window.addEventListener('resize', () => {
+  const s = sessions[activeTabId];
+  if (s) { s.fitAddon.fit(); sendResize(); }
+});
+
+// ─── Profile Management ───────────────────────────────────────────────────────
+saveProfileBtn.addEventListener('click', () => {
+  const host     = hostInput.value.trim();
+  const username = usernameInput.value.trim();
+  const port     = parseInt(portInput.value) || 22;
+  const password = passwordInput.value;
+
+  if (!host || !username) { alert('กรุณากรอก Host และ Username ก่อนเซฟ'); return; }
+
+  const profiles = getSavedProfiles();
+  const id = currentProfileId || `profile_${Date.now()}`;
+  profiles[id] = { id, name: `${username}@${host}`, host, username, port, password };
   localStorage.setItem('ssh_profiles', JSON.stringify(profiles));
-  
   currentProfileId = null;
   loadProfiles();
   alert('บันทึกโปรไฟล์เรียบร้อยแล้ว!');
 });
 
 function getSavedProfiles() {
-  const profilesStr = localStorage.getItem('ssh_profiles');
-  if (!profilesStr) return {};
-  try {
-    return JSON.parse(profilesStr);
-  } catch (e) {
-    return {};
-  }
+  try { return JSON.parse(localStorage.getItem('ssh_profiles') || '{}'); } catch (e) { return {}; }
 }
 
 function loadProfiles() {
   const profiles = getSavedProfiles();
   profilesList.innerHTML = '';
-  
   const keys = Object.keys(profiles);
+
   if (keys.length === 0) {
     profilesList.innerHTML = '<div class="empty-profiles">ไม่มีโปรไฟล์ที่บันทึกไว้</div>';
     return;
@@ -519,47 +567,32 @@ function loadProfiles() {
     const p = profiles[key];
     const card = document.createElement('div');
     card.className = 'profile-card';
-    
     card.innerHTML = `
       <div class="profile-info">
         <span class="profile-name">${p.name}</span>
         <span class="profile-host">${p.username}@${p.host}:${p.port}</span>
       </div>
       <div class="profile-actions">
-        <button class="btn-profile-action connect" title="ใช้งานโปรไฟล์นี้">
-          <i data-lucide="arrow-right"></i>
-        </button>
-        <button class="btn-profile-action delete" title="ลบโปรไฟล์">
-          <i data-lucide="trash-2"></i>
-        </button>
-      </div>
-    `;
+        <button class="btn-profile-action connect" title="ใช้งานโปรไฟล์นี้"><i data-lucide="arrow-right"></i></button>
+        <button class="btn-profile-action delete" title="ลบโปรไฟล์"><i data-lucide="trash-2"></i></button>
+      </div>`;
 
-    // Click profile name to populate form
     card.querySelector('.profile-info').addEventListener('click', () => {
-      hostInput.value = p.host;
-      usernameInput.value = p.username;
-      portInput.value = p.port;
-      passwordInput.value = p.password || '';
+      hostInput.value = p.host; usernameInput.value = p.username;
+      portInput.value = p.port; passwordInput.value = p.password || '';
       currentProfileId = p.id;
     });
 
-    // Click connect button to load form and connect immediately
     card.querySelector('.connect').addEventListener('click', () => {
-      hostInput.value = p.host;
-      usernameInput.value = p.username;
-      portInput.value = p.port;
-      passwordInput.value = p.password || '';
+      hostInput.value = p.host; usernameInput.value = p.username;
+      portInput.value = p.port; passwordInput.value = p.password || '';
       currentProfileId = p.id;
       connectSSH();
     });
 
-    // Delete profile
     card.querySelector('.delete').addEventListener('click', (e) => {
       e.stopPropagation();
-      if (confirm('คุณต้องการลบโปรไฟล์นี้หรือไม่?')) {
-        deleteProfiles(p.id);
-      }
+      if (confirm('คุณต้องการลบโปรไฟล์นี้หรือไม่?')) deleteProfile(p.id);
     });
 
     profilesList.appendChild(card);
@@ -568,7 +601,7 @@ function loadProfiles() {
   lucide.createIcons();
 }
 
-function deleteProfiles(id) {
+function deleteProfile(id) {
   const profiles = getSavedProfiles();
   delete profiles[id];
   localStorage.setItem('ssh_profiles', JSON.stringify(profiles));
@@ -576,69 +609,53 @@ function deleteProfiles(id) {
   loadProfiles();
 }
 
-// Thai Command Input & History Handling
+// ─── Thai Command Input ───────────────────────────────────────────────────────
 function sendThaiCommand() {
+  const session = sessions[activeTabId];
+  if (!session) return;
   const cmd = thaiCommandInput.value;
   if (!cmd) return;
 
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    // \r executes immediately in terminal; omit it for manual-run mode
+  if (session.socket && session.socket.readyState === WebSocket.OPEN) {
     const suffix = autoRunOnEnter ? '\r' : '';
-    socket.send(JSON.stringify({
-      type: 'input',
-      data: cmd + suffix
-    }));
+    session.socket.send(JSON.stringify({ type: 'input', data: cmd + suffix }));
 
-    // Add to history if it's new or not the same as the last one
     if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== cmd) {
       commandHistory.push(cmd);
-      // Cap history at 50 entries
-      if (commandHistory.length > 50) {
-        commandHistory.shift();
-      }
+      if (commandHistory.length > 50) commandHistory.shift();
       localStorage.setItem('ssh_command_history', JSON.stringify(commandHistory));
     }
 
-    // Reset input states
     thaiCommandInput.value = '';
-    historyIndex = -1;
+    session.historyIndex = -1;
   }
 }
 
-// Click Send Button
 sendCommandBtn.addEventListener('click', sendThaiCommand);
 
-// Press Enter inside command input
 thaiCommandInput.addEventListener('keydown', (e) => {
+  const session = sessions[activeTabId];
+  if (!session) return;
+
   if (e.key === 'Enter') {
-    // Skip if IME (Thai input method) is still composing — let it commit first
     if (e.isComposing) return;
     e.preventDefault();
     sendThaiCommand();
   } else if (e.key === 'ArrowUp') {
-    // Cycle older commands
     e.preventDefault();
     if (commandHistory.length === 0) return;
-    
-    if (historyIndex === -1) {
-      historyIndex = commandHistory.length - 1;
-    } else if (historyIndex > 0) {
-      historyIndex--;
-    }
-    thaiCommandInput.value = commandHistory[historyIndex];
+    if (session.historyIndex === -1) session.historyIndex = commandHistory.length - 1;
+    else if (session.historyIndex > 0) session.historyIndex--;
+    thaiCommandInput.value = commandHistory[session.historyIndex];
   } else if (e.key === 'ArrowDown') {
-    // Cycle newer commands
     e.preventDefault();
-    if (commandHistory.length === 0) return;
-
-    if (historyIndex !== -1) {
-      if (historyIndex < commandHistory.length - 1) {
-        historyIndex++;
-        thaiCommandInput.value = commandHistory[historyIndex];
-      } else {
-        historyIndex = -1;
-        thaiCommandInput.value = '';
-      }
+    if (session.historyIndex === -1) return;
+    if (session.historyIndex < commandHistory.length - 1) {
+      session.historyIndex++;
+      thaiCommandInput.value = commandHistory[session.historyIndex];
+    } else {
+      session.historyIndex = -1;
+      thaiCommandInput.value = '';
     }
   }
 });
