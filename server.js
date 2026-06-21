@@ -66,6 +66,11 @@ wss.on('connection', (ws) => {
           });
         });
 
+        conn.on('keyboard-interactive', (_name, _instructions, _lang, prompts, finish) => {
+          const responses = prompts.map(() => msg.password);
+          finish(responses);
+        });
+
         conn.on('error', (err) => {
           console.error('SSH Client Error:', err);
           ws.send(JSON.stringify({ type: 'error', message: `ข้อผิดพลาด SSH: ${err.message}` }));
@@ -83,8 +88,7 @@ wss.on('connection', (ws) => {
           port: parseInt(msg.port) || 22,
           username: msg.username,
           password: msg.password,
-          // Optional: You can add private key support here if requested in the future,
-          // but for now, simple password credentials are requested.
+          tryKeyboard: true,
           keepaliveInterval: 10000,
           keepaliveCountMax: 3
         });
