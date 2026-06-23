@@ -229,6 +229,16 @@
                 <i data-lucide="copy"></i>
               </button>
 
+              <!-- Split Pane -->
+              <button id="btn-split" class="window-action-btn" title="แบ่งหน้าจอ (Split Pane)">
+                <i data-lucide="columns-2"></i>
+              </button>
+
+              <!-- SFTP -->
+              <button id="btn-sftp" class="window-action-btn hidden" title="SFTP โอนไฟล์">
+                <i data-lucide="folder-open"></i>
+              </button>
+
               <!-- Toggle Sidebar -->
               <button id="btn-toggle-sidebar" class="window-action-btn" title="ซ่อน/แสดง แผงควบคุมด้านข้าง">
                 <i data-lucide="panel-left"></i>
@@ -255,7 +265,22 @@
 
           <!-- xterm.js Shell Container -->
           <div class="terminal-content">
-            <div id="terminal-container"></div>
+            <div class="split-wrapper" id="split-wrapper">
+              <!-- Primary Pane -->
+              <div class="split-pane" id="pane-primary">
+                <div id="terminal-container"></div>
+              </div>
+              <!-- Drag Handle -->
+              <div class="split-handle hidden" id="split-handle"></div>
+              <!-- Secondary Pane -->
+              <div class="split-pane hidden" id="pane-secondary">
+                <div class="pane-toolbar">
+                  <span class="pane-label">PANE 2</span>
+                  <select id="secondary-session-select" title="เลือก Session สำหรับ Pane นี้"></select>
+                </div>
+                <div id="terminal-container-secondary"></div>
+              </div>
+            </div>
             <!-- Notification Overlay inside Terminal -->
             <div id="terminal-overlay" class="terminal-overlay hidden">
               <div class="overlay-spinner"></div>
@@ -268,6 +293,9 @@
             <div class="command-input-container">
               <span class="prompt-symbol">&gt;</span>
               <input type="text" id="thai-command-input" placeholder="พิมพ์คำสั่งของคุณที่นี่ (รองรับภาษาไทย และคำสั่งของ claude/antigravity cli)..." autocomplete="off" disabled>
+              <button type="button" id="btn-paste" class="btn-send" title="วาง (Paste)" disabled>
+                <i data-lucide="clipboard"></i>
+              </button>
               <button type="button" id="btn-send-command" class="btn-send" title="ส่งคำสั่ง (หรือกด Enter)" disabled>
                 <i data-lucide="send"></i>
               </button>
@@ -290,6 +318,41 @@
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- SFTP Modal -->
+  <div id="sftp-modal" class="sftp-modal-overlay hidden">
+    <div class="sftp-modal">
+      <div class="sftp-modal-header">
+        <div class="sftp-modal-title">
+          <i data-lucide="hard-drive"></i>
+          <span class="pixel-text-small">SFTP FILE TRANSFER</span>
+        </div>
+        <button id="btn-sftp-close" class="window-action-btn" title="ปิด">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="sftp-path-bar">
+        <button id="btn-sftp-up" class="btn-sftp-action" title="ไปโฟลเดอร์ก่อนหน้า">
+          <i data-lucide="arrow-left"></i>
+        </button>
+        <span id="sftp-path-display">/</span>
+        <button id="btn-sftp-refresh" class="btn-sftp-action" title="รีเฟรช">
+          <i data-lucide="refresh-cw"></i>
+        </button>
+        <label class="btn-sftp-upload" title="อัปโหลดไฟล์">
+          <i data-lucide="upload"></i>
+          <span>อัปโหลด</span>
+          <input type="file" id="sftp-upload-input" multiple style="display:none">
+        </label>
+      </div>
+      <div class="sftp-file-list" id="sftp-file-list">
+        <div class="sftp-empty">เปิด SFTP เพื่อดูไฟล์</div>
+      </div>
+      <div class="sftp-status-bar">
+        <span id="sftp-status-text">พร้อมใช้งาน</span>
+      </div>
+    </div>
   </div>
 
   <!-- xterm.js script -->

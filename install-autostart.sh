@@ -15,9 +15,11 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=$SCRIPT_DIR
+ExecStartPre=/bin/sh -c 'fuser -k 3000/tcp || true'
 ExecStart=/usr/bin/node server.js
 Restart=on-failure
 RestartSec=5
+KillMode=control-group
 
 [Install]
 WantedBy=default.target

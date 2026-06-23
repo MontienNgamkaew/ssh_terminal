@@ -40,6 +40,21 @@ let currentProfileId = null;
 let autoRunOnEnter = localStorage.getItem('ssh_auto_run') !== 'false';
 let commandHistory = [];
 
+// Feature: Beep Notification
+let gimmickActivityStart = null;
+const BEEP_MIN_MS = 2000;
+let gimmickTimeout = null;
+
+// Feature: Split Pane
+let splitMode = false;
+let splitTabId = null;
+let splitDragging = false;
+let splitDragStartX = 0;
+let splitPrimaryStartWidth = 0;
+
+// Feature: SFTP
+let sftpCurrentPath = '/';
+
 // ─── DOM References ───────────────────────────────────────────────────────────
 const connectionForm    = document.getElementById('connection-form');
 const hostInput         = document.getElementById('ssh-host');
@@ -73,11 +88,28 @@ const thaiCommandInput  = document.getElementById('thai-command-input');
 const sendCommandBtn    = document.getElementById('btn-send-command');
 const autoRunToggle     = document.getElementById('auto-run-toggle');
 
+// New feature DOM refs
+const pasteBtn                  = document.getElementById('btn-paste');
+const btnSplit                  = document.getElementById('btn-split');
+const btnSftp                   = document.getElementById('btn-sftp');
+const splitWrapper              = document.getElementById('split-wrapper');
+const paneSecondary             = document.getElementById('pane-secondary');
+const splitHandle               = document.getElementById('split-handle');
+const terminalContainerSec      = document.getElementById('terminal-container-secondary');
+const secondarySessionSelect    = document.getElementById('secondary-session-select');
+const sftpModal                 = document.getElementById('sftp-modal');
+const sftpFileListEl            = document.getElementById('sftp-file-list');
+const sftpPathDisplay           = document.getElementById('sftp-path-display');
+const sftpStatusText            = document.getElementById('sftp-status-text');
+const btnSftpClose              = document.getElementById('btn-sftp-close');
+const btnSftpUp                 = document.getElementById('btn-sftp-up');
+const btnSftpRefresh            = document.getElementById('btn-sftp-refresh');
+const sftpUploadInput           = document.getElementById('sftp-upload-input');
+
 // ─── DOMContentLoaded ────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
-  
-  // Load saved theme or default to Dracula
+
   const savedTheme = localStorage.getItem('ssh_theme') || 'dracula';
   themeSelect.value = savedTheme;
   applyThemeStyles(savedTheme);
@@ -107,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('ssh_auto_run', autoRunOnEnter ? 'true' : 'false');
   });
 
-  // Load saved mascot or default to dino
   const savedMascot = localStorage.getItem('ssh_mascot') || 'dino';
   const mascotSelect = document.getElementById('mascot-select');
   if (mascotSelect) {
@@ -134,13 +165,11 @@ function createTab() {
   tabCounter++;
   const tabId = `tab_${tabCounter}`;
 
-  // Create terminal DOM element
   const termEl = document.createElement('div');
   termEl.className = 'terminal-instance';
   termEl.style.display = 'block';
   terminalContainer.appendChild(termEl);
 
-  // Create xterm instance
   const term = new Terminal({
     cursorBlink: true,
     fontFamily: 'JetBrains Mono, Courier New, monospace',
@@ -155,7 +184,6 @@ function createTab() {
   term.open(termEl);
   fitAddon.fit();
 
-  // Prevent xterm from capturing Alt+Spacebar so it can be handled globally
   term.attachCustomKeyEventHandler((e) => {
     if (e.altKey && (e.code === 'Space' || e.key === ' ' || e.keyCode === 32)) {
       return false;
@@ -163,7 +191,6 @@ function createTab() {
     return true;
   });
 
-  // Forward keystrokes to active SSH session
   term.onData((data) => {
     if (tabId === activeTabId) triggerGimmickActivity();
     const s = sessions[tabId];
@@ -172,7 +199,6 @@ function createTab() {
     }
   });
 
-  // Store session
   sessions[tabId] = {
     id: tabId,
     socket: null,
@@ -184,10 +210,10 @@ function createTab() {
     reconnectAttempts: 0,
     reconnectTimer: null,
     intentionalDisconnect: false,
-    historyIndex: -1
+    historyIndex: -1,
+    customName: null   // Feature: tab rename
   };
 
-  // Create tab UI button
   const tabEl = document.createElement('div');
   tabEl.className = 'tab';
   tabEl.dataset.tabId = tabId;
@@ -201,36 +227,79 @@ function createTab() {
     closeTab(tabId);
   });
 
+  // Feature: Tab Rename — double-click to edit title
+  tabEl.addEventListener('dblclick', (e) => {
+    if (e.target.classList.contains('tab-close')) return;
+    const titleEl = tabEl.querySelector('.tab-title');
+    if (!titleEl || titleEl.tagName === 'INPUT') return;
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tab-rename-input';
+    input.value = titleEl.textContent;
+    titleEl.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const save = () => {
+      const val = input.value.trim();
+      const span = document.createElement('span');
+      span.className = 'tab-title';
+      const num = tabId.split('_')[1];
+      span.textContent = val || `Tab ${num}`;
+      input.replaceWith(span);
+      sessions[tabId].customName = val || null;
+    };
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', e2 => {
+      if (e2.key === 'Enter') { e2.preventDefault(); input.blur(); }
+      if (e2.key === 'Escape') { input.value = sessions[tabId].customName || `Tab ${tabId.split('_')[1]}`; input.blur(); }
+    });
+  });
+
   tabBar.insertBefore(tabEl, btnNewTab);
 
   term.writeln('\x1b[1;36mยินดีต้อนรับสู่ SSH Terminal Bridge!\x1b[0m');
   term.writeln('กรอกรายละเอียดเซิร์ฟเวอร์ด้านซ้ายแล้วกดปุ่ม \x1b[1;32m"เชื่อมต่อ SSH"\x1b[0m เพื่อเริ่มต้นใช้งาน...');
 
   switchToTab(tabId);
+
+  if (splitMode) updateSecondarySelect();
+
   return tabId;
 }
 
 function switchToTab(tabId) {
-  // Hide all terminal instances
-  Object.values(sessions).forEach(s => { s.termEl.style.display = 'none'; });
+  // Only hide termEls that are in the PRIMARY container
+  Object.values(sessions).forEach(s => {
+    if (s.termEl.parentElement === terminalContainer) {
+      s.termEl.style.display = 'none';
+    }
+  });
 
-  // Update tab UI
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`.tab[data-tab-id="${tabId}"]`)?.classList.add('active');
 
   const session = sessions[tabId];
   if (!session) return;
 
+  // If this tab is in secondary pane while split is active, don't move it
+  if (splitMode && tabId === splitTabId) {
+    // Just update UI state without touching secondary pane
+    activeTabId = tabId;
+    syncUIToSession(session);
+    return;
+  }
+
   session.termEl.style.display = 'block';
   activeTabId = tabId;
 
-  // Fit and focus after layout paint
   requestAnimationFrame(() => {
     session.fitAddon.fit();
     session.term.focus();
   });
 
-  // Sync UI state
   syncUIToSession(session);
 }
 
@@ -240,11 +309,15 @@ function closeTab(tabId) {
 
   const tabIds = Object.keys(sessions);
   if (tabIds.length === 1) {
-    // Keep at least one tab; just disconnect
     if (session.status === 'connected' || session.status === 'reconnecting') {
       doDisconnect(tabId, true);
     }
     return;
+  }
+
+  // Feature: Split Pane — exit split if closing the secondary pane tab
+  if (splitMode && tabId === splitTabId) {
+    exitSplitMode();
   }
 
   session.intentionalDisconnect = true;
@@ -260,9 +333,13 @@ function closeTab(tabId) {
     const remaining = Object.keys(sessions);
     switchToTab(remaining[remaining.length - 1]);
   }
+
+  if (splitMode) updateSecondarySelect();
 }
 
 function updateTabTitle(tabId, title) {
+  const session = sessions[tabId];
+  if (session && session.customName) return; // Respect user-set custom name
   const el = document.querySelector(`.tab[data-tab-id="${tabId}"] .tab-title`);
   if (el) el.textContent = title;
 }
@@ -363,16 +440,43 @@ function doConnect(tabId) {
 
             if (appContainer) {
               appContainer.classList.add('sidebar-hidden');
-              setTimeout(() => { session.fitAddon.fit(); sendResize(tabId); }, 300);
+              setTimeout(() => { fitAllTerminals(); }, 300);
             }
           }
         }
       } else if (msg.type === 'data') {
         session.term.write(msg.data);
         if (tabId === activeTabId) triggerGimmickActivity();
+
       } else if (msg.type === 'error') {
         if (tabId === activeTabId) alert(msg.message);
         doDisconnect(tabId, true);
+
+      // ─── SFTP response handlers ─────────────────────────────────────────
+      } else if (msg.type === 'sftp_ls') {
+        renderSftpFiles(msg.files);
+        setSftpStatus(`${msg.files.length} รายการใน ${msg.path}`);
+
+      } else if (msg.type === 'sftp_get') {
+        // Trigger browser file download
+        const bytes = Uint8Array.from(atob(msg.data), c => c.charCodeAt(0));
+        const blob = new Blob([bytes]);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = msg.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setSftpStatus(`ดาวน์โหลด ${msg.name} สำเร็จ ✓`);
+
+      } else if (msg.type === 'sftp_put') {
+        setSftpStatus(`อัปโหลด ${msg.name} สำเร็จ ✓`);
+        sftpNavigate(sftpCurrentPath);
+
+      } else if (msg.type === 'sftp_error') {
+        setSftpStatus(`ข้อผิดพลาด: ${msg.message}`);
       }
     } catch (e) {
       console.error(e);
@@ -431,7 +535,7 @@ function doDisconnect(tabId, intentional) {
 
     if (appContainer) {
       appContainer.classList.remove('sidebar-hidden');
-      setTimeout(() => { session.fitAddon.fit(); }, 300);
+      setTimeout(() => { fitAllTerminals(); }, 300);
     }
   }
 }
@@ -450,15 +554,18 @@ function setConnectionStatus(state, text) {
   if (state === 'connected') {
     connectBtn.disabled = true;
     disconnectBtn.classList.remove('hidden');
+    btnSftp.classList.remove('hidden');  // Show SFTP button when connected
   } else {
     connectBtn.disabled = false;
     disconnectBtn.classList.add('hidden');
+    btnSftp.classList.add('hidden');     // Hide SFTP button when disconnected
   }
 }
 
 function enableCommandBar(enabled) {
   thaiCommandInput.disabled = !enabled;
   sendCommandBtn.disabled = !enabled;
+  pasteBtn.disabled = !enabled;
   if (enabled) thaiCommandInput.focus();
 }
 
@@ -485,10 +592,7 @@ function sendResize(tabId = activeTabId) {
 function toggleSidebar() {
   if (!appContainer) return;
   appContainer.classList.toggle('sidebar-hidden');
-  setTimeout(() => {
-    const s = sessions[activeTabId];
-    if (s) { s.fitAddon.fit(); sendResize(); }
-  }, 300);
+  setTimeout(() => fitAllTerminals(), 300);
 }
 
 function applyThemeStyles(themeKey) {
@@ -497,6 +601,20 @@ function applyThemeStyles(themeKey) {
   Object.values(sessions).forEach(s => { s.term.options.theme = theme; });
   macbookWindow.style.backgroundColor = theme.background;
   macbookWindow.style.borderColor = themeKey.includes('retro') ? theme.foreground : '#3c3d40';
+}
+
+// ─── Fit All Terminals ────────────────────────────────────────────────────────
+function fitAllTerminals() {
+  requestAnimationFrame(() => {
+    const s = sessions[activeTabId];
+    if (s) { s.fitAddon.fit(); sendResize(activeTabId); }
+
+    if (splitMode && splitTabId && sessions[splitTabId]) {
+      const ss = sessions[splitTabId];
+      ss.fitAddon.fit();
+      sendResize(splitTabId);
+    }
+  });
 }
 
 // ─── Copy Output ──────────────────────────────────────────────────────────────
@@ -518,7 +636,6 @@ function copyTerminalOutput() {
     btnCopyOutput.classList.add('copied');
     setTimeout(() => btnCopyOutput.classList.remove('copied'), 1500);
   }).catch(() => {
-    // Fallback for older browsers
     const ta = document.createElement('textarea');
     ta.value = textToCopy;
     document.body.appendChild(ta);
@@ -528,6 +645,304 @@ function copyTerminalOutput() {
     btnCopyOutput.classList.add('copied');
     setTimeout(() => btnCopyOutput.classList.remove('copied'), 1500);
   });
+}
+
+// ─── Feature: Paste Button ────────────────────────────────────────────────────
+pasteBtn.addEventListener('click', () => {
+  navigator.clipboard.readText().then(text => {
+    if (!text) return;
+    if (document.activeElement === thaiCommandInput) {
+      const start = thaiCommandInput.selectionStart;
+      const end   = thaiCommandInput.selectionEnd;
+      thaiCommandInput.value =
+        thaiCommandInput.value.slice(0, start) + text + thaiCommandInput.value.slice(end);
+      thaiCommandInput.selectionStart = thaiCommandInput.selectionEnd = start + text.length;
+    } else {
+      const session = sessions[activeTabId];
+      if (session && session.socket && session.socket.readyState === WebSocket.OPEN) {
+        session.socket.send(JSON.stringify({ type: 'input', data: text }));
+      }
+    }
+  }).catch(() => {});
+});
+
+// ─── Feature: Beep Notification ───────────────────────────────────────────────
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
+    setTimeout(() => ctx.close(), 500);
+  } catch (e) { /* AudioContext unavailable */ }
+}
+
+function triggerGimmickActivity() {
+  const gimmick = document.querySelector('.header-gimmick');
+  if (!gimmick) return;
+
+  // Track when continuous activity started
+  if (!gimmick.classList.contains('active')) {
+    gimmickActivityStart = Date.now();
+  }
+
+  gimmick.classList.add('active');
+
+  if (gimmickTimeout) clearTimeout(gimmickTimeout);
+  gimmickTimeout = setTimeout(() => {
+    gimmick.classList.remove('active');
+
+    // Beep only if mascot was actively running for BEEP_MIN_MS or longer
+    if (gimmickActivityStart && (Date.now() - gimmickActivityStart) >= BEEP_MIN_MS) {
+      playBeep();
+    }
+    gimmickActivityStart = null;
+  }, 1000);
+}
+
+// ─── Feature: Split Pane ──────────────────────────────────────────────────────
+btnSplit.addEventListener('click', toggleSplitMode);
+
+function toggleSplitMode() {
+  if (splitMode) {
+    exitSplitMode();
+  } else {
+    enterSplitMode();
+  }
+}
+
+function enterSplitMode() {
+  splitMode = true;
+  paneSecondary.classList.remove('hidden');
+  splitHandle.classList.remove('hidden');
+  btnSplit.classList.add('split-active');
+
+  updateSecondarySelect();
+
+  // Pick the second tab, or the same tab if only one exists
+  const tabIds = Object.keys(sessions);
+  const initial = tabIds.find(id => id !== activeTabId) || tabIds[0];
+  setSplitSession(initial);
+
+  fitAllTerminals();
+}
+
+function exitSplitMode() {
+  // Move secondary termEl back to primary container
+  if (splitTabId && sessions[splitTabId]) {
+    const s = sessions[splitTabId];
+    terminalContainer.appendChild(s.termEl);
+    if (splitTabId !== activeTabId) s.termEl.style.display = 'none';
+  }
+
+  splitMode = false;
+  splitTabId = null;
+
+  paneSecondary.classList.add('hidden');
+  splitHandle.classList.add('hidden');
+  btnSplit.classList.remove('split-active');
+
+  // Reset primary pane flex
+  document.getElementById('pane-primary').style.flex = '';
+
+  fitAllTerminals();
+}
+
+function setSplitSession(tabId) {
+  if (!sessions[tabId]) return;
+
+  // Return previous secondary termEl to primary container
+  if (splitTabId && sessions[splitTabId] && splitTabId !== tabId) {
+    const prev = sessions[splitTabId];
+    terminalContainer.appendChild(prev.termEl);
+    if (splitTabId !== activeTabId) prev.termEl.style.display = 'none';
+  }
+
+  splitTabId = tabId;
+  const s = sessions[tabId];
+
+  // Move termEl to secondary container
+  terminalContainerSec.appendChild(s.termEl);
+  s.termEl.style.display = 'block';
+
+  secondarySessionSelect.value = tabId;
+
+  requestAnimationFrame(() => {
+    s.fitAddon.fit();
+    sendResize(tabId);
+  });
+}
+
+function updateSecondarySelect() {
+  secondarySessionSelect.innerHTML = '';
+  Object.values(sessions).forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    const titleEl = document.querySelector(`.tab[data-tab-id="${s.id}"] .tab-title`);
+    opt.textContent = titleEl ? titleEl.textContent : s.id;
+    secondarySessionSelect.appendChild(opt);
+  });
+  if (splitTabId) secondarySessionSelect.value = splitTabId;
+}
+
+secondarySessionSelect.addEventListener('change', (e) => {
+  setSplitSession(e.target.value);
+});
+
+// Split handle drag-to-resize
+splitHandle.addEventListener('mousedown', (e) => {
+  splitDragging = true;
+  splitDragStartX = e.clientX;
+  splitPrimaryStartWidth = document.getElementById('pane-primary').offsetWidth;
+  splitHandle.classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!splitDragging) return;
+  const primaryPane = document.getElementById('pane-primary');
+  const totalWidth  = splitWrapper.offsetWidth;
+  const newWidth    = splitPrimaryStartWidth + (e.clientX - splitDragStartX);
+  const pct         = Math.max(20, Math.min(80, (newWidth / totalWidth) * 100));
+  primaryPane.style.flex = `0 0 ${pct}%`;
+  fitAllTerminals();
+});
+
+document.addEventListener('mouseup', () => {
+  if (splitDragging) {
+    splitDragging = false;
+    splitHandle.classList.remove('dragging');
+    document.body.style.cursor = '';
+    fitAllTerminals();
+  }
+});
+
+// ─── Feature: SFTP ────────────────────────────────────────────────────────────
+btnSftp.addEventListener('click', () => {
+  sftpModal.classList.remove('hidden');
+  lucide.createIcons();
+  sftpNavigate(sftpCurrentPath);
+});
+
+btnSftpClose.addEventListener('click', () => sftpModal.classList.add('hidden'));
+
+btnSftpUp.addEventListener('click', () => {
+  const parts = sftpCurrentPath.split('/').filter(Boolean);
+  parts.pop();
+  sftpNavigate('/' + parts.join('/'));
+});
+
+btnSftpRefresh.addEventListener('click', () => sftpNavigate(sftpCurrentPath));
+
+sftpUploadInput.addEventListener('change', (e) => {
+  Array.from(e.target.files).forEach(file => sftpUploadFile(file));
+  sftpUploadInput.value = '';
+});
+
+// Close modal when clicking backdrop
+sftpModal.addEventListener('click', (e) => {
+  if (e.target === sftpModal) sftpModal.classList.add('hidden');
+});
+
+function sftpNavigate(path) {
+  const session = sessions[activeTabId];
+  if (!session || !session.socket || session.socket.readyState !== WebSocket.OPEN) {
+    setSftpStatus('ไม่ได้เชื่อมต่อ SSH');
+    return;
+  }
+  sftpCurrentPath = path || '/';
+  if (!sftpCurrentPath.startsWith('/')) sftpCurrentPath = '/' + sftpCurrentPath;
+  sftpPathDisplay.textContent = sftpCurrentPath;
+  sftpFileListEl.innerHTML = '<div class="sftp-loading"><div class="overlay-spinner"></div><span>กำลังโหลด...</span></div>';
+  setSftpStatus('กำลังโหลด...');
+  session.socket.send(JSON.stringify({ type: 'sftp_ls', path: sftpCurrentPath }));
+}
+
+function sftpDownload(filePath, fileName) {
+  const session = sessions[activeTabId];
+  if (!session || !session.socket || session.socket.readyState !== WebSocket.OPEN) return;
+  setSftpStatus(`กำลังดาวน์โหลด ${fileName}...`);
+  session.socket.send(JSON.stringify({ type: 'sftp_get', path: filePath }));
+}
+
+function sftpUploadFile(file) {
+  const session = sessions[activeTabId];
+  if (!session || !session.socket || session.socket.readyState !== WebSocket.OPEN) return;
+  setSftpStatus(`กำลังอัปโหลด ${file.name}...`);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64 = e.target.result.split(',')[1];
+    session.socket.send(JSON.stringify({
+      type: 'sftp_put',
+      remotePath: sftpCurrentPath,
+      name: file.name,
+      data: base64
+    }));
+  };
+  reader.readAsDataURL(file);
+}
+
+function setSftpStatus(msg) {
+  if (sftpStatusText) sftpStatusText.textContent = msg;
+}
+
+function renderSftpFiles(files) {
+  if (!files || files.length === 0) {
+    sftpFileListEl.innerHTML = '<div class="sftp-empty">ไม่มีไฟล์ในโฟลเดอร์นี้</div>';
+    return;
+  }
+
+  sftpFileListEl.innerHTML = '';
+  files.forEach(f => {
+    const row = document.createElement('div');
+    row.className = `sftp-file-row${f.isDir ? ' is-dir' : ''}`;
+    row.innerHTML = `
+      <div class="sftp-file-icon"><i data-lucide="${f.isDir ? 'folder' : 'file'}"></i></div>
+      <div class="sftp-file-name">${escapeHtml(f.name)}</div>
+      <div class="sftp-file-size">${f.isDir ? '' : formatBytes(f.size)}</div>
+      <div class="sftp-file-actions">
+        ${!f.isDir ? `<button class="sftp-download-btn" title="ดาวน์โหลด"><i data-lucide="download"></i></button>` : ''}
+      </div>`;
+
+    if (f.isDir) {
+      row.addEventListener('click', () => {
+        const newPath = sftpCurrentPath.replace(/\/+$/, '') + '/' + f.name;
+        sftpNavigate(newPath);
+      });
+    } else {
+      const dlBtn = row.querySelector('.sftp-download-btn');
+      if (dlBtn) {
+        dlBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const filePath = sftpCurrentPath.replace(/\/+$/, '') + '/' + f.name;
+          sftpDownload(filePath, f.name);
+        });
+      }
+    }
+
+    sftpFileListEl.appendChild(row);
+  });
+  lucide.createIcons();
+}
+
+function formatBytes(bytes) {
+  if (!bytes || bytes === 0) return '0 B';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 // ─── Event Listeners ──────────────────────────────────────────────────────────
@@ -564,10 +979,7 @@ btnCopyOutput.addEventListener('click', copyTerminalOutput);
 
 btnNewTab.addEventListener('click', () => createTab());
 
-window.addEventListener('resize', () => {
-  const s = sessions[activeTabId];
-  if (s) { s.fitAddon.fit(); sendResize(); }
-});
+window.addEventListener('resize', () => fitAllTerminals());
 
 // ─── Profile Management ───────────────────────────────────────────────────────
 saveProfileBtn.addEventListener('click', () => {
@@ -702,7 +1114,7 @@ thaiCommandInput.addEventListener('keydown', (e) => {
 let lastToggleTime = 0;
 function toggleCursorFocus() {
   const now = Date.now();
-  if (now - lastToggleTime < 100) return; // Debounce double triggers
+  if (now - lastToggleTime < 100) return;
   lastToggleTime = now;
 
   const session = sessions[activeTabId];
@@ -726,20 +1138,6 @@ window.addEventListener('keydown', (e) => {
     }
   }
 });
-
-// ─── Header Gimmick Activity Control ─────────────────────────────────────────
-let gimmickTimeout = null;
-function triggerGimmickActivity() {
-  const gimmick = document.querySelector('.header-gimmick');
-  if (!gimmick) return;
-  
-  gimmick.classList.add('active');
-  
-  if (gimmickTimeout) clearTimeout(gimmickTimeout);
-  gimmickTimeout = setTimeout(() => {
-    gimmick.classList.remove('active');
-  }, 1000);
-}
 
 // ─── Mascot Gimmick Setup ───────────────────────────────────────────────────
 const MASCOT_SVGS = {
@@ -959,4 +1357,3 @@ function updateMascotSVG(mascotName) {
   const svgContent = MASCOT_SVGS[mascotName] || MASCOT_SVGS['dino'];
   container.innerHTML = svgContent;
 }
-

@@ -104,6 +104,79 @@ wss.on('connection', (ws) => {
         if (sshStream) {
           sshStream.setWindow(msg.rows, msg.cols, 0, 0);
         }
+
+      } else if (msg.type === 'sftp_ls') {
+        if (!conn) { ws.send(JSON.stringify({ type: 'sftp_error', message: 'ไม่ได้เชื่อมต่อ SSH' })); return; }
+        conn.sftp((err, sftp) => {
+          if (err) { ws.send(JSON.stringify({ type: 'sftp_error', message: err.message })); return; }
+          const targetPath = msg.path || '/';
+          sftp.readdir(targetPath, (err2, list) => {
+            sftp.end();
+            if (err2) { ws.send(JSON.stringify({ type: 'sftp_error', message: err2.message })); return; }
+            const files = list.map(f => ({
+              name: f.filename,
+              size: f.attrs.size,
+              isDir: !!(f.attrs.mode & 0o40000),
+              mtime: f.attrs.mtime
+            })).sort((a, b) => {
+              if (a.isDir !== b.isDir) return a.isDir ? -1 : 1;
+              return a.name.localeCompare(b.name);
+            });
+            ws.send(JSON.stringify({ type: 'sftp_ls', path: targetPath, files }));
+          });
+        });
+
+      } else if (msg.type === 'sftp_get') {
+        if (!conn) return;
+        conn.sftp((err, sftp) => {
+          if (err) { ws.send(JSON.stringify({ type: 'sftp_error', message: err.message })); return; }
+          const chunks = [];
+          let totalSize = 0;
+          const MAX_SIZE = 50 * 1024 * 1024;
+          const stream = sftp.createReadStream(msg.path);
+          stream.on('data', chunk => {
+            totalSize += chunk.length;
+            if (totalSize > MAX_SIZE) {
+              stream.destroy();
+              sftp.end();
+              ws.send(JSON.stringify({ type: 'sftp_error', message: 'ไฟล์ใหญ่เกินไป (จำกัด 50MB)' }));
+              return;
+            }
+            chunks.push(chunk);
+          });
+          stream.on('end', () => {
+            sftp.end();
+            ws.send(JSON.stringify({
+              type: 'sftp_get',
+              path: msg.path,
+              name: path.basename(msg.path),
+              data: Buffer.concat(chunks).toString('base64')
+            }));
+          });
+          stream.on('error', err2 => {
+            sftp.end();
+            ws.send(JSON.stringify({ type: 'sftp_error', message: err2.message }));
+          });
+        });
+
+      } else if (msg.type === 'sftp_put') {
+        if (!conn) return;
+        conn.sftp((err, sftp) => {
+          if (err) { ws.send(JSON.stringify({ type: 'sftp_error', message: err.message })); return; }
+          const remotePath = (msg.remotePath || '/').replace(/\/+$/, '') + '/' + msg.name;
+          const buf = Buffer.from(msg.data, 'base64');
+          const writeStream = sftp.createWriteStream(remotePath);
+          writeStream.on('close', () => {
+            sftp.end();
+            ws.send(JSON.stringify({ type: 'sftp_put', name: msg.name, success: true }));
+          });
+          writeStream.on('error', err2 => {
+            sftp.end();
+            ws.send(JSON.stringify({ type: 'sftp_error', message: err2.message }));
+          });
+          writeStream.write(buf);
+          writeStream.end();
+        });
       }
 
     } catch (e) {
